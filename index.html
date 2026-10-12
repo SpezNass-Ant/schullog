@@ -492,18 +492,23 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, collection, addDoc, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Fehlerbehandlung für mobile Webviews absichern
         try {
-            // Global Settings & Auth
-            const appId = typeof __app_id !== 'undefined' ? __app_id : 'lennox-school-log-v3';
-            let firebaseConfig = {};
-            if (typeof __firebase_config !== 'undefined') {
-                firebaseConfig = JSON.parse(__firebase_config);
-            }
-            const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+            // =========================================================================
+            // HIER IST JETZT DEINE ECHTE DATENBANK EINGEBAUT!
+            // =========================================================================
+            const firebaseConfig = {
+              apiKey: "AIzaSyCfUHWwACCKn1lmsE1b2h56JsQJk-A_wvU",
+              authDomain: "schullog-9336c.firebaseapp.com",
+              projectId: "schullog-9336c",
+              storageBucket: "schullog-9336c.firebasestorage.app",
+              messagingSenderId: "680847926960",
+              appId: "1:680847926960:web:dc42865e8838dba9be7d75",
+              measurementId: "G-5NG1NEBG0C"
+            };
+            // =========================================================================
 
             const app = initializeApp(firebaseConfig);
             const db = getFirestore(app);
@@ -835,9 +840,9 @@
                 btn.disabled = true;
 
                 try {
-                    // Speichert exakt in die Mappe des ausgewählten Kinds im Familien-Speicher
+                    // Speichert in der echten eigenen Datenbank ab!
                     const collectionName = 'school_logs_' + currentProfile.toLowerCase();
-                    const logsRef = collection(db, 'artifacts', appId, 'public', 'data', collectionName);
+                    const logsRef = collection(db, collectionName);
                     await addDoc(logsRef, payload);
                     
                     showToast(`${subject} gespeichert!`);
@@ -896,7 +901,7 @@
 
                     try {
                         const collectionName = 'school_logs_' + currentProfile.toLowerCase();
-                        const logsRef = collection(db, 'artifacts', appId, 'public', 'data', collectionName);
+                        const logsRef = collection(db, collectionName);
                         await addDoc(logsRef, payload);
                         showToast("Allgemeine Info gespeichert!");
                         
@@ -917,11 +922,7 @@
             // Auth Logic
             async function authenticate() {
                 try {
-                    if (initialAuthToken) {
-                        await signInWithCustomToken(auth, initialAuthToken);
-                    } else {
-                        await signInAnonymously(auth);
-                    }
+                    await signInAnonymously(auth);
                 } catch (error) {
                     console.error("Auth error:", error);
                     document.getElementById('auth-indicator').classList.replace('bg-yellow-400', 'bg-red-500');
@@ -955,9 +956,8 @@
                     unsubscribeLogs();
                 }
 
-                // Läd exakt die Mappe des ausgewählten Kinds aus dem Familien-Speicher
                 const collectionName = 'school_logs_' + currentProfile.toLowerCase();
-                const logsRef = collection(db, 'artifacts', appId, 'public', 'data', collectionName);
+                const logsRef = collection(db, collectionName);
                 
                 unsubscribeLogs = onSnapshot(logsRef, (snapshot) => {
                     allLogs = [];
@@ -1320,7 +1320,7 @@
                 if (!currentUser || !currentProfile) return;
                 try {
                     const collectionName = 'school_logs_' + currentProfile.toLowerCase();
-                    const logRef = doc(db, 'artifacts', appId, 'public', 'data', collectionName, logId);
+                    const logRef = doc(db, collectionName, logId);
                     await deleteDoc(logRef);
                     showToast("Eintrag gelöscht", "error");
                 } catch (error) { console.error("Error deleting: ", error); }
