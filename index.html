@@ -1,0 +1,1358 @@
+<!DOCTYPE html>
+<html lang="de" class="light">
+<head>
+    <meta charset="UTF-8">
+    <!-- Wichtig für Handys: Verhindert seltsames Zoomen und stellt die Breite korrekt ein -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Lennox's Schul-Logbuch</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class' // Dies zwingt Tailwind, auf den Darkmode-Button zu hören!
+        }
+    </script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body { 
+            font-family: 'Inter', sans-serif; 
+            /* Fallback-Farben, falls Tailwind auf dem Handy blockiert wird */
+            background-color: #f1f5f9; 
+            color: #1e293b;
+        }
+        /* Fallback für Darkmode ohne Tailwind */
+        .dark body {
+            background-color: #0f172a;
+            color: #f8fafc;
+        }
+        
+        /* Glass panel for light and dark modes */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+        .dark .glass-panel {
+            background: rgba(30, 41, 59, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Custom scrollbar */
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; }
+        
+        /* Hidden class for SPA routing */
+        .spa-hidden { display: none !important; }
+
+        /* Button Animations */
+        .subject-btn { transition: all 0.2s; }
+        .subject-btn:active { transform: scale(0.95); }
+    </style>
+
+    <!-- Notfall-Skript: Zeigt Fehler an, falls das Handy etwas blockiert (statt schwarzem Bildschirm) -->
+    <script>
+        window.onerror = function(msg, url, lineNo, columnNo, error) {
+            const errDiv = document.createElement('div');
+            errDiv.style.cssText = 'position:fixed;top:0;left:0;width:100%;background:red;color:white;z-index:9999;padding:20px;font-family:sans-serif;';
+            errDiv.innerHTML = '<b>Fehler beim Laden:</b><br>' + msg + '<br><small>Bitte lade die Seite neu.</small>';
+            document.body.appendChild(errDiv);
+            return false;
+        };
+    </script>
+    
+    <!-- PWA & App Icons Meta Tags -->
+    <meta name="theme-color" content="#4f46e5">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Schul-Log">
+</head>
+<body class="bg-slate-100 text-slate-800 dark:bg-slate-900 dark:text-slate-200 min-h-[100dvh] flex flex-col relative overflow-x-hidden transition-colors duration-300">
+
+    <!-- Background Decoration -->
+    <div class="fixed top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
+        <div class="absolute top-[-10%] left-[-10%] w-96 h-96 bg-indigo-300/30 dark:bg-indigo-900/40 rounded-full blur-3xl"></div>
+        <div class="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-purple-300/30 dark:bg-purple-900/40 rounded-full blur-3xl"></div>
+    </div>
+
+    <!-- Header -->
+    <header class="bg-indigo-600 dark:bg-indigo-800 text-white shadow-md relative z-20">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-3 cursor-pointer" onclick="if(typeof currentProfile !== 'undefined' && currentProfile) navigate('welcome')">
+                <svg class="w-8 h-8 text-indigo-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477-4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                <h1 id="app-title" class="text-xl md:text-2xl font-bold tracking-tight">Schul-Log</h1>
+            </div>
+            
+            <div class="flex items-center gap-2 md:gap-4">
+                <!-- Sync Status (kleiner auf dem Handy) -->
+                <div id="auth-status" class="hidden sm:flex text-xs font-medium bg-indigo-500/50 dark:bg-indigo-900/50 px-2 py-1 rounded-full items-center gap-1">
+                    <div class="w-2 h-2 rounded-full bg-yellow-400 animate-pulse" id="auth-indicator"></div>
+                    <span id="auth-text">Lädt...</span>
+                </div>
+
+                <!-- Theme Toggle -->
+                <button id="theme-toggle" class="p-2 rounded-full hover:bg-white/20 transition-colors" title="Dark/Light Mode">
+                    <svg id="icon-sun" class="w-5 h-5 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                    <svg id="icon-moon" class="w-5 h-5 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                </button>
+
+                <!-- Logout / Profil wechseln -->
+                <button id="logout-btn" onclick="logout()" class="hidden bg-white/20 hover:bg-white/30 text-white p-2 rounded-xl text-sm font-medium transition-all items-center shadow-sm" title="Profil wechseln">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                </button>
+
+                <!-- Navigation Button (Übersicht) -->
+                <button id="nav-btn" onclick="toggleNav()" class="hidden bg-white/20 hover:bg-white/30 text-white px-3 py-2 rounded-xl text-sm font-medium transition-all items-center gap-2 shadow-sm">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>
+                    <span id="nav-btn-text">Übersicht</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow w-full max-w-4xl mx-auto px-4 sm:px-6 py-6 md:py-8 relative z-10 flex flex-col">
+        
+        <!-- ================= VIEW 0: LOGIN ================= -->
+        <section id="view-login" class="spa-hidden flex flex-col items-center justify-center gap-8 w-full min-h-[60vh] mt-4">
+            <div class="text-center space-y-2">
+                <h2 class="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400">
+                    Willkommen!
+                </h2>
+                <p class="text-slate-600 dark:text-slate-400">Wer loggt sich gerade ein?</p>
+            </div>
+            <div class="flex flex-row gap-4 sm:gap-6 w-full max-w-md mx-auto justify-center px-4">
+                <button onclick="loginAs('Lennox')" class="flex-1 glass-panel rounded-3xl p-4 sm:p-6 flex flex-col items-center gap-3 sm:gap-4 border-2 border-transparent hover:border-indigo-500 hover:shadow-xl transition-all group">
+                    <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-3xl sm:text-4xl group-hover:scale-110 transition-transform shadow-sm">
+                        👦
+                    </div>
+                    <span class="font-bold text-lg sm:text-xl text-slate-800 dark:text-white">Lennox</span>
+                </button>
+                <button onclick="loginAs('Nalia')" class="flex-1 glass-panel rounded-3xl p-4 sm:p-6 flex flex-col items-center gap-3 sm:gap-4 border-2 border-transparent hover:border-pink-500 hover:shadow-xl transition-all group">
+                    <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-pink-100 dark:bg-pink-900/50 flex items-center justify-center text-3xl sm:text-4xl group-hover:scale-110 transition-transform shadow-sm">
+                        👧
+                    </div>
+                    <span class="font-bold text-lg sm:text-xl text-slate-800 dark:text-white">Nalia</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- ================= VIEW 1: START & FÄCHER ================= -->
+        <section id="view-welcome" class="spa-hidden flex flex-col gap-6 w-full">
+            <div class="text-center space-y-2 mt-2">
+                <h2 class="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400">
+                    Hallo <span id="welcome-name">Lennox</span>! 👋
+                </h2>
+                <p class="text-slate-600 dark:text-slate-400">Welche Fächer hattest du heute?</p>
+            </div>
+
+            <div class="glass-panel rounded-3xl p-5 md:p-8 shadow-xl mt-2 flex-grow">
+                <!-- Datum -->
+                <div class="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-slate-200 dark:border-slate-700 pb-5">
+                    <div>
+                        <h3 class="font-semibold text-slate-800 dark:text-white">Datum des Eintrags</h3>
+                    </div>
+                    <input type="date" id="entry-date" class="w-full sm:w-auto px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-slate-800 dark:text-white shadow-sm cursor-pointer">
+                </div>
+
+                <!-- Fächer-Grid -->
+                <div class="mb-6">
+                    <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">Klicke alle an, für die du dir Notizen machen willst:</p>
+                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3" id="subject-grid">
+                        <!-- Wird per JS befüllt -->
+                    </div>
+                </div>
+
+                <button id="start-wizard-btn" disabled class="w-full mt-2 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 disabled:from-slate-300 disabled:to-slate-400 disabled:dark:from-slate-700 disabled:dark:to-slate-800 disabled:text-slate-500 text-white font-semibold py-4 px-6 rounded-2xl shadow-lg transition-all flex justify-center items-center gap-2 transform disabled:cursor-not-allowed">
+                    <span>Weiter geht's</span>
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                </button>
+                
+                <!-- NEU: Allgemeine Info -->
+                <button onclick="navigate('general-info')" class="w-full mt-4 glass-panel border-2 border-teal-500 hover:bg-teal-50 dark:hover:bg-teal-900/40 text-teal-700 dark:text-teal-300 font-semibold py-4 px-6 rounded-2xl shadow-sm transition-all flex justify-between items-center group">
+                    <div class="flex items-center gap-3">
+                        <span class="text-2xl">💡</span>
+                        <span class="text-base sm:text-lg font-bold">Allgemeine Info eintragen</span>
+                    </div>
+                    <svg class="w-6 h-6 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                </button>
+            </div>
+
+            <!-- NEU: Kalender / Anstehende Termine -->
+            <div class="glass-panel rounded-3xl p-5 md:p-8 shadow-xl mt-2 flex-grow">
+                <h3 class="text-xl font-bold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
+                    <svg class="w-6 h-6 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                    Anstehende Termine
+                </h3>
+                <div id="upcoming-events-list" class="space-y-3">
+                    <p class="text-sm text-slate-500 dark:text-slate-400 italic">Lade Termine...</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= VIEW 2: WIZARD (Fragebogen) ================= -->
+        <section id="view-wizard" class="spa-hidden flex flex-col gap-4 w-full h-full">
+            <div class="flex items-center justify-between mb-1">
+                <button onclick="navigate('welcome')" class="text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 flex items-center gap-1 text-sm font-medium p-2 -ml-2 transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                    Zurück
+                </button>
+                <div class="text-xs font-medium text-slate-500 bg-white dark:bg-slate-800 px-3 py-1.5 rounded-full border border-slate-200 dark:border-slate-700">
+                    Fach <span id="wizard-current-step">1</span> von <span id="wizard-total-steps">3</span>
+                </div>
+            </div>
+
+            <div class="glass-panel rounded-3xl shadow-xl flex flex-col border border-slate-200 dark:border-slate-700 overflow-hidden">
+                <!-- Header Fach -->
+                <div class="bg-indigo-50 dark:bg-slate-800 px-5 py-4 border-b border-indigo-100 dark:border-slate-700 flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center text-2xl font-bold shadow-md">
+                        <span id="wizard-subject-icon">📝</span>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-800 dark:text-white" id="wizard-subject-title">Fachname</h2>
+                        <p class="text-xs text-slate-500 dark:text-slate-400" id="wizard-date-display">Datum</p>
+                    </div>
+                </div>
+                
+                <!-- Formular -->
+                <form id="wizard-form" class="p-5 md:p-8 flex flex-col gap-6">
+                    
+                    <!-- 1. Thema -->
+                    <div class="space-y-1.5">
+                        <label for="w-topic" class="block font-semibold text-slate-700 dark:text-slate-200">1. Welches Thema habt ihr heute bearbeitet?</label>
+                        <input type="text" id="w-topic" required placeholder="z.B. Bruchrechnen, Ägypten..." class="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-slate-500">
+                    </div>
+
+                    <!-- 2. Material -->
+                    <div class="space-y-1.5">
+                        <label for="w-material" class="block font-semibold text-slate-700 dark:text-slate-200">2. Welche Seiten im Buch, Arbeitsheft oder auf dem Arbeitsblatt?</label>
+                        <input type="text" id="w-material" placeholder="z.B. Buch S. 45 Nr. 2a-c" class="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-slate-500">
+                    </div>
+
+                    <!-- 3. Hausaufgaben -->
+                    <div class="space-y-3">
+                        <label class="block font-semibold text-slate-700 dark:text-slate-200">3. Gab es Hausaufgaben?</label>
+                        <div class="flex gap-6">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="has_homework" value="yes" class="w-5 h-5 text-indigo-600 focus:ring-indigo-500 dark:bg-slate-800 dark:border-slate-600"> 
+                                <span class="text-slate-700 dark:text-slate-200 font-medium">Ja</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="has_homework" value="no" checked class="w-5 h-5 text-indigo-600 focus:ring-indigo-500 dark:bg-slate-800 dark:border-slate-600"> 
+                                <span class="text-slate-700 dark:text-slate-200 font-medium">Nein</span>
+                            </label>
+                        </div>
+                        <div id="w-homework-details" class="hidden space-y-4 pl-4 border-l-2 border-indigo-200 dark:border-indigo-700 mt-2">
+                            <div>
+                                <label for="w-homework-text" class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1 block">Was muss gemacht werden?</label>
+                                <textarea id="w-homework-text" rows="2" placeholder="z.B. Vokabeln S. 120 abschreiben..." class="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-slate-800 dark:text-white resize-none dark:placeholder-slate-500"></textarea>
+                            </div>
+                            <div>
+                                <label for="w-homework-date" class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1 block">Bis wann?</label>
+                                <input type="date" id="w-homework-date" class="w-full sm:w-auto px-4 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-slate-800 dark:text-white">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 4. Klausur -->
+                    <div class="space-y-3">
+                        <div id="q4-standard">
+                            <label class="block font-semibold text-slate-700 dark:text-slate-200">4. Steht eine Klassenarbeit/Klausur an?</label>
+                            <div class="flex gap-6 mt-2">
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="radio" name="has_exam" value="yes" class="w-5 h-5 text-indigo-600 focus:ring-indigo-500 dark:bg-slate-800 dark:border-slate-600"> 
+                                    <span class="text-slate-700 dark:text-slate-200 font-medium">Ja</span>
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="radio" name="has_exam" value="no" checked class="w-5 h-5 text-indigo-600 focus:ring-indigo-500 dark:bg-slate-800 dark:border-slate-600"> 
+                                    <span class="text-slate-700 dark:text-slate-200 font-medium">Nein</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div id="q4-existing" class="hidden">
+                            <label class="block font-semibold text-slate-700 dark:text-slate-200">4. Geplante Klassenarbeit/Klausur</label>
+                            <div class="text-sm p-4 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-200 rounded-xl mt-2 border border-indigo-200 dark:border-indigo-800 leading-relaxed">
+                                <span id="q4-existing-text"></span>
+                            </div>
+                            <p class="text-sm font-semibold mt-4 mb-2 text-slate-700 dark:text-slate-300">Sind diese Daten noch aktuell?</p>
+                            <div class="flex gap-6">
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="radio" name="exam_update" value="keep" checked class="w-5 h-5 text-indigo-600 focus:ring-indigo-500 dark:bg-slate-800 dark:border-slate-600"> 
+                                    <span class="text-slate-700 dark:text-slate-200 font-medium">Ja, bleibt so</span>
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="radio" name="exam_update" value="edit" class="w-5 h-5 text-indigo-600 focus:ring-indigo-500 dark:bg-slate-800 dark:border-slate-600"> 
+                                    <span class="text-slate-700 dark:text-slate-200 font-medium">Nein, anpassen</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div id="w-exam-details" class="hidden space-y-4 pl-4 border-l-2 border-indigo-200 dark:border-indigo-700 mt-2">
+                            <div>
+                                <label for="w-exam-text" class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1 block">Welche Themen kommen dran?</label>
+                                <textarea id="w-exam-text" rows="2" placeholder="z.B. Brüche addieren, Kürzen..." class="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-slate-800 dark:text-white resize-none dark:placeholder-slate-500"></textarea>
+                            </div>
+                            <div>
+                                <label for="w-exam-date" class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1 block">Wann ist die Arbeit?</label>
+                                <input type="date" id="w-exam-date" class="w-full sm:w-auto px-4 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-slate-800 dark:text-white">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Speichern Button -->
+                    <div class="pt-4 mt-2 border-t border-slate-200 dark:border-slate-700">
+                        <button type="submit" id="wizard-next-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-4 px-4 rounded-xl shadow-md transition-all flex justify-center items-center gap-2 transform active:scale-95 text-sm sm:text-base">
+                            <span id="wizard-btn-text">Eintrag speichern & Nächstes Fach</span>
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <div class="h-10"></div> <!-- Abstand unten für Handys -->
+        </section>
+
+        <!-- ================= VIEW 4: ALLGEMEINE INFO ================= -->
+        <section id="view-general-info" class="spa-hidden flex flex-col gap-4 w-full h-full">
+            <div class="flex items-center justify-between mb-1">
+                <button onclick="navigate('welcome')" class="text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 flex items-center gap-1 text-sm font-medium p-2 -ml-2 transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                    Zurück
+                </button>
+            </div>
+            
+            <div class="glass-panel rounded-3xl shadow-xl flex flex-col border border-slate-200 dark:border-slate-700 overflow-hidden">
+                <div class="bg-teal-50 dark:bg-slate-800 px-5 py-4 border-b border-teal-100 dark:border-slate-700 flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-2xl bg-teal-600 text-white flex items-center justify-center text-2xl font-bold shadow-md">
+                        💡
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-800 dark:text-white">Allgemeine Infos</h2>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Notizen, Erinnerungen & Wichtiges</p>
+                    </div>
+                </div>
+                
+                <form id="general-info-form" class="p-5 md:p-8 flex flex-col gap-6">
+                    <div class="space-y-1.5">
+                        <label for="g-notes" class="block font-semibold text-slate-700 dark:text-slate-200">Worum geht es?</label>
+                        <textarea id="g-notes" rows="3" required placeholder="z.B. Elternbrief unterschreiben, Material für Ausflug mitbringen..." class="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-teal-500 outline-none transition-all text-slate-800 dark:text-white resize-none dark:placeholder-slate-500"></textarea>
+                    </div>
+                    
+                    <div class="space-y-3">
+                        <label class="block font-semibold text-slate-700 dark:text-slate-200">Muss das bis zu einem bestimmten Datum erledigt sein?</label>
+                        <div class="flex gap-6">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="g_has_date" value="yes" class="w-5 h-5 text-teal-600 focus:ring-teal-500 dark:bg-slate-800 dark:border-slate-600"> 
+                                <span class="text-slate-700 dark:text-slate-200 font-medium">Ja</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="g_has_date" value="no" checked class="w-5 h-5 text-teal-600 focus:ring-teal-500 dark:bg-slate-800 dark:border-slate-600"> 
+                                <span class="text-slate-700 dark:text-slate-200 font-medium">Nein</span>
+                            </label>
+                        </div>
+                        <div id="g-date-details" class="hidden mt-2 border-l-2 border-teal-200 dark:border-teal-700 pl-4">
+                            <label for="g-date" class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1 block">Bis wann?</label>
+                            <input type="date" id="g-date" class="w-full sm:w-auto px-4 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-teal-500 outline-none transition-all text-slate-800 dark:text-white">
+                        </div>
+                    </div>
+                    
+                    <div class="pt-4 mt-2 border-t border-slate-200 dark:border-slate-700">
+                        <button type="submit" id="general-save-btn" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-semibold py-4 px-4 rounded-xl shadow-md transition-all flex justify-center items-center gap-2 transform active:scale-95 text-sm sm:text-base">
+                            <span>Info speichern</span>
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <div class="h-10"></div>
+        </section>
+
+        <!-- ================= VIEW 3: ÜBERSICHT (Dashboard) ================= -->
+        <section id="view-dashboard" class="spa-hidden flex flex-col gap-6 w-full h-full">
+            <div class="text-center space-y-2 mt-2">
+                <h2 class="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400">
+                    Übersicht
+                </h2>
+                <p class="text-slate-600 dark:text-slate-400">Was möchtest du sehen?</p>
+            </div>
+            
+            <!-- Große Filter Buttons (wie auf der Startseite) -->
+            <div class="grid grid-cols-2 gap-3 mb-2" id="filter-buttons-container">
+                <button id="filter-btn-all" class="filter-btn p-3 sm:p-4 rounded-2xl border-2 text-left flex flex-col gap-1 sm:gap-2 shadow-sm transition-all bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-indigo-300 dark:hover:border-indigo-600">
+                    <span class="text-xl sm:text-2xl">📋</span>
+                    <span class="font-semibold text-xs sm:text-sm">Alle Einträge</span>
+                </button>
+                <div class="relative flex flex-col">
+                    <button id="filter-btn-week" class="h-full filter-btn p-3 sm:p-4 rounded-2xl border-2 text-left flex flex-col justify-between gap-1 sm:gap-2 shadow-sm transition-all bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-indigo-300 dark:hover:border-indigo-600">
+                        <div class="flex justify-between items-start w-full">
+                            <span class="text-xl sm:text-2xl">📅</span>
+                            <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </div>
+                        <span class="font-semibold text-xs sm:text-sm" id="week-btn-text">Woche wählen</span>
+                    </button>
+                    <!-- Menü Woche -->
+                    <div id="filter-week-menu" class="hidden absolute top-full left-0 mt-2 w-full sm:w-64 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-xl z-50 p-4 flex flex-col gap-3">
+                        <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Welche Woche?</div>
+                        <input type="week" id="filter-week-picker" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-slate-800 dark:text-white shadow-sm cursor-pointer">
+                        <button id="apply-week-filter" class="mt-1 w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-xl text-sm font-bold shadow-md transition-all active:scale-95">
+                            Anzeigen
+                        </button>
+                    </div>
+                </div>
+                <button id="filter-btn-hw" class="filter-btn p-3 sm:p-4 rounded-2xl border-2 text-left flex flex-col gap-1 sm:gap-2 shadow-sm transition-all bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-indigo-300 dark:hover:border-indigo-600">
+                    <span class="text-xl sm:text-2xl">✍️</span>
+                    <span class="font-semibold text-xs sm:text-sm">Nur Hausaufgaben</span>
+                </button>
+                <button id="filter-btn-exam" class="filter-btn p-3 sm:p-4 rounded-2xl border-2 text-left flex flex-col gap-1 sm:gap-2 shadow-sm transition-all bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-indigo-300 dark:hover:border-indigo-600">
+                    <span class="text-xl sm:text-2xl">⚠️</span>
+                    <span class="font-semibold text-xs sm:text-sm">Nur Klausuren</span>
+                </button>
+                <button id="filter-btn-general" class="filter-btn p-3 sm:p-4 rounded-2xl border-2 text-left flex flex-col gap-1 sm:gap-2 shadow-sm transition-all bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-indigo-300 dark:hover:border-indigo-600">
+                    <span class="text-xl sm:text-2xl">💡</span>
+                    <span class="font-semibold text-xs sm:text-sm">Allgemeine Infos</span>
+                </button>
+                <div class="relative">
+                    <button id="filter-btn-subjects" class="h-full w-full filter-btn p-3 sm:p-4 rounded-2xl border-2 text-left flex items-center justify-between shadow-sm transition-all bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-indigo-300 dark:hover:border-indigo-600">
+                        <div class="flex flex-col gap-1 sm:gap-2">
+                            <span class="text-xl sm:text-2xl">🎯</span>
+                            <span class="font-semibold text-xs sm:text-sm">Fächer ▾</span>
+                        </div>
+                    </button>
+                    <!-- Menü Fächer -->
+                    <div id="filter-subject-menu" class="hidden absolute top-full left-0 mt-2 w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-xl z-50 p-4 flex flex-col gap-3">
+                        <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Welche Fächer?</div>
+                        <div id="filter-subject-list" class="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-60 overflow-y-auto custom-scrollbar">
+                            <!-- JS befüllt -->
+                        </div>
+                        <button id="apply-subject-filter" class="mt-2 w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-xl text-sm font-bold shadow-md transition-all active:scale-95">
+                            Ergebnisse anzeigen
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Liste der Einträge -->
+            <div id="logs-container" class="flex-grow flex flex-col gap-4 mt-2">
+                <!-- Fallback / Loading -->
+                <div class="text-center py-16 bg-white/50 dark:bg-slate-800/50 rounded-3xl border border-dashed border-slate-300 dark:border-slate-600" id="empty-state">
+                    <div class="w-10 h-10 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mx-auto mb-4"></div>
+                    <p class="text-slate-500 dark:text-slate-400">Lade Einträge...</p>
+                </div>
+            </div>
+            
+            <div class="h-10"></div>
+        </section>
+    </main>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-slate-800 text-white px-6 py-3 rounded-2xl shadow-2xl translate-y-24 opacity-0 transition-all duration-300 z-50 flex items-center gap-3 font-medium w-[90%] max-w-sm">
+        <svg id="toast-icon" class="w-5 h-5 text-green-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+        <span id="toast-message" class="truncate">Gespeichert!</span>
+    </div>
+
+    <!-- PWA Installation Logic -->
+    <script>
+        // Erstellt das App-Manifest (Notwendig für die Installation) dynamisch
+        const manifest = {
+            "name": "Schul-Logbuch",
+            "short_name": "Schul-Log",
+            "description": "Logbuch für Hausaufgaben und Klausuren",
+            "start_url": ".",
+            "display": "standalone",
+            "background_color": "#f8fafc",
+            "theme_color": "#4f46e5",
+            "icons": [{
+                "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgcng9IjI1IiBmaWxsPSIjNGY0NmU1Ii8+PHRleHQgeD0iNTAiIHk9IjY1IiBmb250LXNpemU9IjUwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj7wn5S4PC90ZXh0Pjwvc3ZnPg==",
+                "sizes": "192x192",
+                "type": "image/svg+xml"
+            }]
+        };
+        const manifestString = JSON.stringify(manifest);
+        const manifestUrl = 'data:application/manifest+json;charset=utf-8,' + encodeURIComponent(manifestString);
+        document.head.insertAdjacentHTML('beforeend', `<link rel="manifest" href="${manifestUrl}">`);
+
+        // Service Worker Registrierung (Macht die App installierbar)
+        const swCode = `
+            self.addEventListener('install', (e) => self.skipWaiting());
+            self.addEventListener('activate', (e) => self.clients.claim());
+            self.addEventListener('fetch', (e) => {}); // Einfacher Pass-Through
+        `;
+        const blob = new Blob([swCode], {type: 'application/javascript'});
+        const swUrl = URL.createObjectURL(blob);
+        
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register(swUrl).catch(err => console.log('SW Setup gescheitert:', err));
+            });
+        }
+    </script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, collection, addDoc, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Fehlerbehandlung für mobile Webviews absichern
+        try {
+            // Global Settings & Auth
+            const appId = typeof __app_id !== 'undefined' ? __app_id : 'lennox-school-log-v3';
+            let firebaseConfig = {};
+            if (typeof __firebase_config !== 'undefined') {
+                firebaseConfig = JSON.parse(__firebase_config);
+            }
+            const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+            const app = initializeApp(firebaseConfig);
+            const db = getFirestore(app);
+            const auth = getAuth(app);
+
+            // Application State
+            let currentUser = null;
+            let allLogs = [];
+            let unsubscribeLogs = null;
+            let currentProfile = localStorage.getItem('school_log_profile') || null;
+            
+            // Wizard State
+            let selectedSubjects = [];
+            let currentSubjectIndex = 0;
+            let currentEntryDate = "";
+
+            // Alle Fächer aus Lennox' Stundenplan (Gymnasium Hummelsbüttel)
+            const ALL_SUBJECTS = [
+                "Kunst", "Geschichte", "Latein", "Klassenrat", 
+                "Deutsch", "Religion", "Musik", "Mathe", 
+                "Englisch", "Geographie", "Physik", "Sport", "Biologie"
+            ];
+
+            const SUBJECT_ICONS = {
+                "Kunst": "🎨", "Geschichte": "🏛️", "Latein": "📜", "Klassenrat": "💬",
+                "Deutsch": "📚", "Religion": "🕊️", "Musik": "🎵", "Mathe": "➗",
+                "Englisch": "🇬🇧", "Geographie": "🌍", "Physik": "⚡", "Sport": "⚽", "Biologie": "🧬",
+                "Allgemeine Info": "💡"
+            };
+
+            // DOM Elements
+            const themeToggle = document.getElementById('theme-toggle');
+            const iconSun = document.getElementById('icon-sun');
+            const iconMoon = document.getElementById('icon-moon');
+            const htmlElement = document.documentElement;
+
+            const viewWelcome = document.getElementById('view-welcome');
+            const viewWizard = document.getElementById('view-wizard');
+            const viewGeneralInfo = document.getElementById('view-general-info');
+            const viewDashboard = document.getElementById('view-dashboard');
+            const viewLogin = document.getElementById('view-login');
+            const navBtn = document.getElementById('nav-btn');
+            const navBtnText = document.getElementById('nav-btn-text');
+            const logoutBtn = document.getElementById('logout-btn');
+            const appTitle = document.getElementById('app-title');
+            const welcomeName = document.getElementById('welcome-name');
+            
+            const subjectGrid = document.getElementById('subject-grid');
+            const startWizardBtn = document.getElementById('start-wizard-btn');
+            const dateInput = document.getElementById('entry-date');
+
+            // Toggle Logic für Formular
+            const hwRadios = document.querySelectorAll('input[name="has_homework"]');
+            const hwDetails = document.getElementById('w-homework-details');
+            hwRadios.forEach(r => r.addEventListener('change', (e) => {
+                if(e.target.value === 'yes') hwDetails.classList.remove('hidden');
+                else hwDetails.classList.add('hidden');
+            }));
+
+            const examRadios = document.querySelectorAll('input[name="has_exam"]');
+            const examUpdateRadios = document.querySelectorAll('input[name="exam_update"]');
+            const examDetails = document.getElementById('w-exam-details');
+            
+            examRadios.forEach(r => r.addEventListener('change', (e) => {
+                if(e.target.value === 'yes') examDetails.classList.remove('hidden');
+                else examDetails.classList.add('hidden');
+            }));
+
+            if(examUpdateRadios) {
+                examUpdateRadios.forEach(r => r.addEventListener('change', (e) => {
+                    if(e.target.value === 'edit') examDetails.classList.remove('hidden');
+                    else examDetails.classList.add('hidden');
+                }));
+            }
+
+            // Theme Logic (Dark/Light Mode)
+            function initTheme() {
+                const isDark = localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                if (isDark) {
+                    htmlElement.classList.add('dark');
+                    iconSun.classList.remove('hidden');
+                    iconMoon.classList.add('hidden');
+                } else {
+                    htmlElement.classList.remove('dark');
+                    iconSun.classList.add('hidden');
+                    iconMoon.classList.remove('hidden');
+                }
+            }
+
+            themeToggle.addEventListener('click', () => {
+                if (htmlElement.classList.contains('dark')) {
+                    htmlElement.classList.remove('dark');
+                    localStorage.theme = 'light';
+                    iconSun.classList.add('hidden');
+                    iconMoon.classList.remove('hidden');
+                } else {
+                    htmlElement.classList.add('dark');
+                    localStorage.theme = 'dark';
+                    iconSun.classList.remove('hidden');
+                    iconMoon.classList.add('hidden');
+                }
+            });
+            initTheme();
+
+            // Set Date to Today
+            dateInput.valueAsDate = new Date();
+
+            // View Navigation
+            let currentView = 'login';
+            window.navigate = (viewId) => {
+                currentView = viewId;
+                viewLogin.classList.add('spa-hidden');
+                viewWelcome.classList.add('spa-hidden');
+                viewWizard.classList.add('spa-hidden');
+                if(viewGeneralInfo) viewGeneralInfo.classList.add('spa-hidden');
+                viewDashboard.classList.add('spa-hidden');
+
+                document.getElementById(`view-${viewId}`).classList.remove('spa-hidden');
+                window.scrollTo(0, 0);
+
+                // Menü-Knöpfe steuern (sollen im Login versteckt sein)
+                if (viewId === 'login') {
+                    navBtn.classList.add('hidden');
+                    navBtn.classList.remove('flex');
+                    logoutBtn.classList.add('hidden');
+                    logoutBtn.classList.remove('flex');
+                } else {
+                    navBtn.classList.remove('hidden');
+                    navBtn.classList.add('flex');
+                    logoutBtn.classList.remove('hidden');
+                    logoutBtn.classList.add('flex');
+                }
+
+                if (viewId === 'dashboard') {
+                    navBtnText.innerText = "Zurück";
+                } else if(viewId !== 'login') {
+                    navBtnText.innerText = "Übersicht";
+                }
+            };
+
+            window.toggleNav = () => {
+                if (currentView === 'dashboard') {
+                    navigate('welcome');
+                } else {
+                    navigate('dashboard');
+                }
+            };
+
+            // Login Logic
+            window.loginAs = (name) => {
+                currentProfile = name;
+                localStorage.setItem('school_log_profile', name);
+                
+                appTitle.innerText = name + "'s Log";
+                welcomeName.innerText = name;
+                
+                // Lade nur die Daten für das ausgewählte Kind
+                if(currentUser) loadLogs();
+                navigate('welcome');
+            };
+
+            window.logout = () => {
+                currentProfile = null;
+                localStorage.removeItem('school_log_profile');
+                if(unsubscribeLogs) {
+                    unsubscribeLogs();
+                    unsubscribeLogs = null;
+                }
+                allLogs = [];
+                navigate('login');
+            };
+
+            // Start: Wenn man schon eingeloggt ist, direkt weiterleiten
+            if (currentProfile) {
+                appTitle.innerText = currentProfile + "'s Log";
+                welcomeName.innerText = currentProfile;
+                navigate('welcome');
+            } else {
+                navigate('login');
+            }
+
+            // Render Subject Grid
+            function renderSubjectGrid() {
+                subjectGrid.innerHTML = '';
+                ALL_SUBJECTS.forEach(subject => {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    
+                    const isSelected = selectedSubjects.includes(subject);
+                    const baseClasses = "subject-btn w-full p-3 sm:p-4 rounded-2xl border-2 text-left flex flex-col gap-1 sm:gap-2 bg-white dark:bg-slate-800 shadow-sm";
+                    const selectedClasses = "border-indigo-500 bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 shadow-md";
+                    const unselectedClasses = "border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-indigo-300 dark:hover:border-indigo-600";
+                    
+                    btn.className = `${baseClasses} ${isSelected ? selectedClasses : unselectedClasses}`;
+                    
+                    btn.innerHTML = `
+                        <span class="text-xl sm:text-2xl">${SUBJECT_ICONS[subject] || '📘'}</span>
+                        <span class="font-semibold text-xs sm:text-sm truncate w-full">${subject}</span>
+                    `;
+                    
+                    btn.onclick = () => {
+                        if (selectedSubjects.includes(subject)) {
+                            selectedSubjects = selectedSubjects.filter(s => s !== subject);
+                        } else {
+                            selectedSubjects.push(subject);
+                        }
+                        renderSubjectGrid();
+                    };
+                    subjectGrid.appendChild(btn);
+                });
+                
+                startWizardBtn.disabled = selectedSubjects.length === 0;
+            }
+            renderSubjectGrid();
+
+            // Start Wizard
+            startWizardBtn.addEventListener('click', () => {
+                if (selectedSubjects.length === 0) return;
+                currentEntryDate = dateInput.value;
+                currentSubjectIndex = 0;
+                loadWizardStep();
+                navigate('wizard');
+            });
+
+            function loadWizardStep() {
+                const subject = selectedSubjects[currentSubjectIndex];
+                document.getElementById('wizard-subject-title').innerText = subject;
+                document.getElementById('wizard-subject-icon').innerText = SUBJECT_ICONS[subject] || '📘';
+                
+                const dateObj = new Date(currentEntryDate);
+                document.getElementById('wizard-date-display').innerText = dateObj.toLocaleDateString('de-DE', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
+                
+                document.getElementById('wizard-current-step').innerText = currentSubjectIndex + 1;
+                document.getElementById('wizard-total-steps').innerText = selectedSubjects.length;
+
+                if (currentSubjectIndex === selectedSubjects.length - 1) {
+                    document.getElementById('wizard-btn-text').innerText = "Speichern & Abschließen";
+                } else {
+                    document.getElementById('wizard-btn-text').innerText = "Speichern & Nächstes Fach";
+                }
+
+                document.getElementById('wizard-form').reset();
+                
+                // Formular-Zusatzfelder wieder verstecken
+                document.querySelector('input[name="has_homework"][value="no"]').checked = true;
+                document.getElementById('w-homework-details').classList.add('hidden');
+                
+                // Q4: Prüfen ob es schon eine Klausur in der Zukunft gibt
+                document.getElementById('w-exam-details').classList.add('hidden');
+                const today = new Date();
+                today.setHours(0,0,0,0);
+                
+                const existingExam = allLogs.find(l => l.subject === subject && l.hasExam && new Date(l.examDate) >= today);
+                
+                if (existingExam) {
+                    document.getElementById('q4-standard').classList.add('hidden');
+                    document.getElementById('q4-existing').classList.remove('hidden');
+                    document.getElementById('q4-existing-text').innerHTML = `<b>Thema:</b> ${existingExam.examText}<br><b>Wann:</b> ${new Date(existingExam.examDate).toLocaleDateString('de-DE')}`;
+                    
+                    document.querySelector('input[name="exam_update"][value="keep"]').checked = true;
+                    document.getElementById('w-exam-text').value = existingExam.examText;
+                    document.getElementById('w-exam-date').value = existingExam.examDate;
+                    
+                    window.currentExistingExam = existingExam;
+                } else {
+                    document.getElementById('q4-standard').classList.remove('hidden');
+                    document.getElementById('q4-existing').classList.add('hidden');
+                    document.querySelector('input[name="has_exam"][value="no"]').checked = true;
+                    document.getElementById('w-exam-text').value = '';
+                    document.getElementById('w-exam-date').value = '';
+                    
+                    window.currentExistingExam = null;
+                }
+            }
+
+            document.getElementById('wizard-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                if (!currentUser) {
+                    showToast("Bitte warte auf Cloud-Verbindung...", "error");
+                    return;
+                }
+
+                const subject = selectedSubjects[currentSubjectIndex];
+                
+                const hasHomework = document.querySelector('input[name="has_homework"]:checked').value === 'yes';
+                
+                // Klausur-Logik anpassen (neu oder aktualisiert)
+                let hasExam = false;
+                let examText = "";
+                let examDate = "";
+                
+                if (window.currentExistingExam) {
+                    const action = document.querySelector('input[name="exam_update"]:checked').value;
+                    if (action === 'keep') {
+                        hasExam = true;
+                        examText = window.currentExistingExam.examText;
+                        examDate = window.currentExistingExam.examDate;
+                    } else {
+                        examText = document.getElementById('w-exam-text').value.trim();
+                        examDate = document.getElementById('w-exam-date').value;
+                        hasExam = examText !== "" && examDate !== ""; // Falls geleert, wird Klausur entfernt
+                    }
+                } else {
+                    hasExam = document.querySelector('input[name="has_exam"]:checked').value === 'yes';
+                    examText = hasExam ? document.getElementById('w-exam-text').value.trim() : "";
+                    examDate = hasExam ? document.getElementById('w-exam-date').value : "";
+                }
+
+                const payload = {
+                    date: currentEntryDate,
+                    subject: subject,
+                    topic: document.getElementById('w-topic').value.trim(),
+                    material: document.getElementById('w-material').value.trim(),
+                    
+                    hasHomework: hasHomework,
+                    homeworkText: hasHomework ? document.getElementById('w-homework-text').value.trim() : "",
+                    homeworkDate: hasHomework ? document.getElementById('w-homework-date').value : "",
+                    
+                    hasExam: hasExam,
+                    examText: examText,
+                    examDate: examDate,
+                    
+                    createdAt: new Date().toISOString()
+                };
+
+                const btn = document.getElementById('wizard-next-btn');
+                const originalContent = btn.innerHTML;
+                btn.innerHTML = `<div class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> Speichert...`;
+                btn.disabled = true;
+
+                try {
+                    // Speichert exakt in die Mappe des ausgewählten Kinds im Familien-Speicher
+                    const collectionName = 'school_logs_' + currentProfile.toLowerCase();
+                    const logsRef = collection(db, 'artifacts', appId, 'public', 'data', collectionName);
+                    await addDoc(logsRef, payload);
+                    
+                    showToast(`${subject} gespeichert!`);
+                    
+                    // GANZ WICHTIG: Button vor dem Laden des nächsten Schritts wiederherstellen,
+                    // damit die ID 'wizard-btn-text' wieder im HTML-Baum ist!
+                    btn.innerHTML = originalContent;
+                    btn.disabled = false;
+                    
+                    if (currentSubjectIndex < selectedSubjects.length - 1) {
+                        currentSubjectIndex++;
+                        loadWizardStep();
+                    } else {
+                        selectedSubjects = [];
+                        renderSubjectGrid();
+                        navigate('dashboard');
+                    }
+                } catch (error) {
+                    console.error("Error saving:", error);
+                    showToast("Fehler beim Speichern", "error");
+                    btn.innerHTML = originalContent;
+                    btn.disabled = false;
+                }
+            });
+            
+            // Logik für "Allgemeine Info" Formular
+            const gDateRadios = document.querySelectorAll('input[name="g_has_date"]');
+            const gDateDetails = document.getElementById('g-date-details');
+            if(gDateRadios.length > 0) {
+                gDateRadios.forEach(r => r.addEventListener('change', (e) => {
+                    if(e.target.value === 'yes') gDateDetails.classList.remove('hidden');
+                    else gDateDetails.classList.add('hidden');
+                }));
+                
+                document.getElementById('general-info-form').addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    if (!currentUser) return;
+                    
+                    const btn = document.getElementById('general-save-btn');
+                    const originalContent = btn.innerHTML;
+                    btn.innerHTML = `<div class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> Speichert...`;
+                    btn.disabled = true;
+
+                    const hasDate = document.querySelector('input[name="g_has_date"]:checked').value === 'yes';
+                    
+                    const payload = {
+                        date: new Date().toISOString().split('T')[0],
+                        subject: "Allgemeine Info",
+                        notes: document.getElementById('g-notes').value.trim(),
+                        hasDueDate: hasDate,
+                        dueDate: hasDate ? document.getElementById('g-date').value : "",
+                        hasHomework: false,
+                        hasExam: false,
+                        createdAt: new Date().toISOString()
+                    };
+
+                    try {
+                        const collectionName = 'school_logs_' + currentProfile.toLowerCase();
+                        const logsRef = collection(db, 'artifacts', appId, 'public', 'data', collectionName);
+                        await addDoc(logsRef, payload);
+                        showToast("Allgemeine Info gespeichert!");
+                        
+                        btn.innerHTML = originalContent;
+                        btn.disabled = false;
+                        document.getElementById('general-info-form').reset();
+                        gDateDetails.classList.add('hidden');
+                        navigate('dashboard');
+                    } catch (error) {
+                        console.error("Error saving general info:", error);
+                        showToast("Fehler beim Speichern", "error");
+                        btn.innerHTML = originalContent;
+                        btn.disabled = false;
+                    }
+                });
+            }
+
+            // Auth Logic
+            async function authenticate() {
+                try {
+                    if (initialAuthToken) {
+                        await signInWithCustomToken(auth, initialAuthToken);
+                    } else {
+                        await signInAnonymously(auth);
+                    }
+                } catch (error) {
+                    console.error("Auth error:", error);
+                    document.getElementById('auth-indicator').classList.replace('bg-yellow-400', 'bg-red-500');
+                    document.getElementById('auth-text').innerText = "Offline";
+                }
+            }
+
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    currentUser = user;
+                    const indicator = document.getElementById('auth-indicator');
+                    if(indicator) {
+                        indicator.classList.replace('bg-yellow-400', 'bg-green-400');
+                        indicator.classList.remove('animate-pulse');
+                    }
+                    const authTxt = document.getElementById('auth-text');
+                    if(authTxt) authTxt.innerText = "Cloud Sync";
+                    loadLogs();
+                } else {
+                    currentUser = null;
+                    if(unsubscribeLogs) unsubscribeLogs();
+                }
+            });
+            authenticate();
+
+            function loadLogs() {
+                if (!currentUser || !currentProfile) return; // Stoppen, wenn keiner eingeloggt ist
+                
+                // Alten Live-Stream trennen, falls wir das Profil wechseln
+                if (unsubscribeLogs) {
+                    unsubscribeLogs();
+                }
+
+                // Läd exakt die Mappe des ausgewählten Kinds aus dem Familien-Speicher
+                const collectionName = 'school_logs_' + currentProfile.toLowerCase();
+                const logsRef = collection(db, 'artifacts', appId, 'public', 'data', collectionName);
+                
+                unsubscribeLogs = onSnapshot(logsRef, (snapshot) => {
+                    allLogs = [];
+                    snapshot.forEach((doc) => {
+                        allLogs.push({ id: doc.id, ...doc.data() });
+                    });
+                    allLogs.sort((a, b) => new Date(b.date) - new Date(a.date));
+                    updateSubjectFilterList();
+                    renderLogs();
+                    renderUpcomingEvents(); // Kalender aktualisieren
+                }, (error) => {
+                    console.error("Error fetching logs: ", error);
+                });
+            }
+
+            // FILTER LOGIC NEU
+            const logsContainer = document.getElementById('logs-container');
+            let currentFilterMode = null; // Startet auf "null" (keine Auswahl)
+            let selectedFilterSubjects = [];
+            let selectedWeekStart = null;
+            let selectedWeekEnd = null;
+
+            const filterBtnAll = document.getElementById('filter-btn-all');
+            const filterBtnWeek = document.getElementById('filter-btn-week');
+            const filterWeekMenu = document.getElementById('filter-week-menu');
+            const filterWeekPicker = document.getElementById('filter-week-picker');
+            const applyWeekFilterBtn = document.getElementById('apply-week-filter');
+            const weekBtnText = document.getElementById('week-btn-text');
+            const filterBtnHw = document.getElementById('filter-btn-hw');
+            const filterBtnExam = document.getElementById('filter-btn-exam');
+            const filterBtnGeneral = document.getElementById('filter-btn-general');
+            const filterBtnSubjects = document.getElementById('filter-btn-subjects');
+            const filterSubjectMenu = document.getElementById('filter-subject-menu');
+            const filterSubjectList = document.getElementById('filter-subject-list');
+            const applySubjectFilterBtn = document.getElementById('apply-subject-filter');
+
+            function resetFilterButtons() {
+                const baseClass = "filter-btn p-3 sm:p-4 rounded-2xl border-2 text-left flex flex-col gap-1 sm:gap-2 shadow-sm transition-all bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-indigo-300 dark:hover:border-indigo-600";
+                if(filterBtnAll) filterBtnAll.className = baseClass;
+                if(filterBtnWeek) filterBtnWeek.className = "h-full " + baseClass.replace("flex-col gap-1 sm:gap-2", "flex-col justify-between gap-1 sm:gap-2");
+                if(filterBtnHw) filterBtnHw.className = baseClass;
+                if(filterBtnExam) filterBtnExam.className = baseClass;
+                if(filterBtnGeneral) filterBtnGeneral.className = baseClass;
+                if(filterBtnSubjects) filterBtnSubjects.className = "h-full w-full filter-btn p-3 sm:p-4 rounded-2xl border-2 text-left flex items-center justify-between shadow-sm transition-all bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-indigo-300 dark:hover:border-indigo-600";
+                
+                if (weekBtnText && currentFilterMode !== 'week') {
+                    weekBtnText.innerText = "Woche wählen";
+                }
+            }
+
+            function setActiveButton(btn) {
+                resetFilterButtons();
+                const activeClass = "filter-btn p-3 sm:p-4 rounded-2xl border-2 text-left flex flex-col gap-1 sm:gap-2 shadow-md transition-all border-indigo-500 bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300";
+                if(btn) btn.className = activeClass;
+                if(btn === filterBtnWeek) {
+                    btn.className = "h-full " + activeClass.replace("flex-col gap-1 sm:gap-2", "flex-col justify-between gap-1 sm:gap-2");
+                }
+                if(btn === filterBtnSubjects) {
+                    btn.className = "h-full w-full filter-btn p-3 sm:p-4 rounded-2xl border-2 text-left flex items-center justify-between shadow-md transition-all border-indigo-500 bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300";
+                }
+            }
+
+            if(filterBtnAll) filterBtnAll.addEventListener('click', () => { currentFilterMode = 'all'; setActiveButton(filterBtnAll); renderLogs(); });
+            
+            // Wochen-Filter Logik
+            if(filterBtnWeek) {
+                filterBtnWeek.addEventListener('click', () => {
+                    filterWeekMenu.classList.toggle('hidden');
+                });
+            }
+            
+            function getCurrentWeekString() {
+                const now = new Date();
+                const d = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+                const dayNum = d.getUTCDay() || 7;
+                d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+                const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+                const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1)/7);
+                return `${d.getUTCFullYear()}-W${weekNo.toString().padStart(2, '0')}`;
+            }
+
+            if (filterWeekPicker) {
+                filterWeekPicker.value = getCurrentWeekString();
+            }
+
+            function getWeekRange(weekStr) {
+                if(!weekStr) return null;
+                const [yearStr, weekNumStr] = weekStr.split('-W');
+                const year = parseInt(yearStr, 10);
+                const week = parseInt(weekNumStr, 10);
+                const d = new Date(year, 0, 4); 
+                const day = d.getDay() || 7; 
+                d.setDate(d.getDate() + (week - 1) * 7 - day + 1); 
+                
+                const start = new Date(d);
+                start.setHours(0,0,0,0);
+                
+                const end = new Date(d);
+                end.setDate(end.getDate() + 6);
+                end.setHours(23,59,59,999);
+                
+                return { start, end };
+            }
+
+            if (applyWeekFilterBtn) applyWeekFilterBtn.addEventListener('click', () => {
+                const weekVal = filterWeekPicker.value;
+                if (weekVal) {
+                    const range = getWeekRange(weekVal);
+                    if (range) {
+                        selectedWeekStart = range.start;
+                        selectedWeekEnd = range.end;
+                        currentFilterMode = 'week';
+                        
+                        const [, weekNum] = weekVal.split('-W');
+                        weekBtnText.innerText = `KW ${weekNum}`;
+                        
+                        setActiveButton(filterBtnWeek);
+                    }
+                } else {
+                    currentFilterMode = 'all';
+                    setActiveButton(filterBtnAll);
+                }
+                filterWeekMenu.classList.add('hidden');
+                renderLogs();
+            });
+
+            if(filterBtnHw) filterBtnHw.addEventListener('click', () => { currentFilterMode = 'hw'; setActiveButton(filterBtnHw); renderLogs(); });
+            if(filterBtnExam) filterBtnExam.addEventListener('click', () => { currentFilterMode = 'exam'; setActiveButton(filterBtnExam); renderLogs(); });
+            if(filterBtnGeneral) filterBtnGeneral.addEventListener('click', () => { currentFilterMode = 'general'; setActiveButton(filterBtnGeneral); renderLogs(); });
+            
+            // Fächer Dropdown
+            if(filterBtnSubjects) filterBtnSubjects.addEventListener('click', () => {
+                filterSubjectMenu.classList.toggle('hidden');
+            });
+
+            // Schließe Menü, wenn außerhalb geklickt wird
+            document.addEventListener('click', (e) => {
+                if(filterBtnSubjects && !filterBtnSubjects.contains(e.target) && !filterSubjectMenu.contains(e.target)) {
+                    filterSubjectMenu.classList.add('hidden');
+                }
+                if(filterBtnWeek && !filterBtnWeek.contains(e.target) && !filterWeekMenu.contains(e.target)) {
+                    filterWeekMenu.classList.add('hidden');
+                }
+            });
+
+            function updateSubjectFilterList() {
+                if(!filterSubjectList) return;
+                const subjects = [...new Set(allLogs.map(log => log.subject))].sort();
+                
+                filterSubjectList.innerHTML = subjects.map(sub => `
+                    <label class="flex items-center gap-2 p-2 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-lg cursor-pointer border border-transparent hover:border-slate-200 dark:hover:border-slate-600 transition-all">
+                        <input type="checkbox" value="${sub}" class="subject-filter-cb w-5 h-5 text-indigo-600 rounded dark:bg-slate-800 dark:border-slate-600 focus:ring-indigo-500" ${selectedFilterSubjects.includes(sub) ? 'checked' : ''}>
+                        <span class="text-sm font-medium text-slate-700 dark:text-slate-300">${sub}</span>
+                    </label>
+                `).join('');
+
+                if(subjects.length === 0) {
+                    filterSubjectList.innerHTML = `<div class="text-sm text-slate-500 italic p-2 col-span-2">Noch keine Fächer in der Datenbank.</div>`;
+                }
+            }
+
+            if(applySubjectFilterBtn) applySubjectFilterBtn.addEventListener('click', () => {
+                const checkboxes = document.querySelectorAll('.subject-filter-cb');
+                selectedFilterSubjects = Array.from(checkboxes).filter(cb => cb.checked).map(cb => cb.value);
+                
+                if (selectedFilterSubjects.length > 0) {
+                    currentFilterMode = 'subjects';
+                    setActiveButton(filterBtnSubjects);
+                } else {
+                    currentFilterMode = 'all';
+                    setActiveButton(filterBtnAll);
+                }
+                
+                filterSubjectMenu.classList.add('hidden');
+                renderLogs();
+            });
+
+
+            // Funktion für den Terminkalender
+            function renderUpcomingEvents() {
+                const container = document.getElementById('upcoming-events-list');
+                if(!container) return;
+                
+                let events = [];
+                const today = new Date();
+                today.setHours(0,0,0,0);
+
+                allLogs.forEach(log => {
+                    if (log.hasHomework && log.homeworkDate) {
+                        events.push({ type: 'homework', date: new Date(log.homeworkDate + 'T12:00:00'), subject: log.subject, text: log.homeworkText });
+                    }
+                    if (log.hasExam && log.examDate) {
+                        events.push({ type: 'exam', date: new Date(log.examDate + 'T12:00:00'), subject: log.subject, text: log.examText });
+                    }
+                    if (log.subject === 'Allgemeine Info' && log.hasDueDate && log.dueDate) {
+                        events.push({ type: 'general', date: new Date(log.dueDate + 'T12:00:00'), subject: 'Info/Notiz', text: log.notes });
+                    }
+                });
+
+                // Ab heute filtern und chronologisch sortieren
+                events = events.filter(e => e.date >= today).sort((a, b) => a.date - b.date);
+
+                if (events.length === 0) {
+                    container.innerHTML = `<p class="text-sm text-slate-500 dark:text-slate-400 italic">Keine anstehenden Termine (Klausuren oder Hausaufgaben).</p>`;
+                    return;
+                }
+
+                container.innerHTML = events.map(e => {
+                    const isExam = e.type === 'exam';
+                    const isGeneral = e.type === 'general';
+                    let icon = '📝';
+                    let color = 'border-orange-400 bg-orange-50 dark:bg-orange-900/20';
+                    let titleColor = 'text-orange-700 dark:text-orange-400';
+                    let typeTag = '(HA)';
+                    
+                    if (isExam) {
+                        icon = '⚠️'; color = 'border-red-400 bg-red-50 dark:bg-red-900/20'; titleColor = 'text-red-700 dark:text-red-400'; typeTag = '(Klausur)';
+                    } else if (isGeneral) {
+                        icon = '💡'; color = 'border-teal-400 bg-teal-50 dark:bg-teal-900/20'; titleColor = 'text-teal-700 dark:text-teal-400'; typeTag = '(Wichtig)';
+                    }
+                    
+                    const dateFormatted = e.date.toLocaleDateString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit' });
+                    
+                    return `
+                        <div class="flex items-start gap-3 p-3 rounded-xl border-l-4 ${color} shadow-sm border border-slate-100 dark:border-slate-800">
+                            <div class="text-xl mt-0.5">${icon}</div>
+                            <div class="w-full">
+                                <div class="flex justify-between items-center w-full">
+                                    <span class="font-bold text-sm ${titleColor}">${e.subject} ${typeTag}</span>
+                                    <span class="text-xs font-semibold text-slate-500">${dateFormatted}</span>
+                                </div>
+                                <p class="text-sm text-slate-700 dark:text-slate-300 mt-1">${e.text}</p>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            function renderLogs() {
+                if (allLogs.length === 0) {
+                    logsContainer.innerHTML = `
+                        <div class="text-center py-16 bg-white/50 dark:bg-slate-800/50 rounded-3xl border border-dashed border-slate-300 dark:border-slate-600 mt-4">
+                            <svg class="w-12 h-12 text-slate-300 dark:text-slate-500 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                            <p class="text-slate-600 dark:text-slate-400 font-medium">Noch keine Einträge vorhanden.</p>
+                        </div>`;
+                    return;
+                }
+
+                if (currentFilterMode === null) {
+                    logsContainer.innerHTML = `
+                        <div class="text-center py-12 bg-indigo-50/50 dark:bg-slate-800/30 rounded-3xl border border-indigo-100 dark:border-slate-700 mt-4">
+                            <div class="text-4xl mb-4 animate-bounce">👆</div>
+                            <p class="text-slate-700 dark:text-slate-300 font-medium">Bitte wähle oben aus,<br>was du sehen möchtest.</p>
+                        </div>`;
+                    return;
+                }
+
+                // Filter anwenden
+                let filteredLogs = allLogs;
+                const today = new Date();
+                
+                if (currentFilterMode === 'week' && selectedWeekStart && selectedWeekEnd) {
+                    filteredLogs = allLogs.filter(l => {
+                        const logDate = new Date(l.date);
+                        return logDate >= selectedWeekStart && logDate <= selectedWeekEnd;
+                    });
+                } else if (currentFilterMode === 'hw') {
+                    filteredLogs = allLogs.filter(l => l.hasHomework === true);
+                } else if (currentFilterMode === 'exam') {
+                    filteredLogs = allLogs.filter(l => l.hasExam === true);
+                } else if (currentFilterMode === 'subjects' && selectedFilterSubjects.length > 0) {
+                    filteredLogs = allLogs.filter(l => selectedFilterSubjects.includes(l.subject));
+                } else if (currentFilterMode === 'general') {
+                    filteredLogs = allLogs.filter(l => l.subject === 'Allgemeine Info');
+                }
+
+                logsContainer.innerHTML = '';
+                if(filteredLogs.length === 0) {
+                    logsContainer.innerHTML = `<div class="text-center py-10 text-slate-500 dark:text-slate-400 font-medium mt-4">Keine Einträge für diesen Filter gefunden.</div>`;
+                    return;
+                }
+
+                filteredLogs.forEach(log => {
+                    const dateStr = new Date(log.date).toLocaleDateString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' });
+                    const icon = SUBJECT_ICONS[log.subject] || '📘';
+                    
+                    // Fallback-Logik für alte vs neue Datenstruktur
+                    let hwContent = "";
+                    if (log.hasHomework === true) hwContent = `${log.homeworkText}\n(Bis: ${new Date(log.homeworkDate + 'T12:00:00').toLocaleDateString('de-DE')})`;
+                    else if (log.hasHomework === false) hwContent = "Keine";
+                    else hwContent = log.homework; // Altes System
+
+                    let examContent = "";
+                    if (log.hasExam === true) examContent = `Themen: ${log.examText}\n(Am: ${new Date(log.examDate + 'T12:00:00').toLocaleDateString('de-DE')})`;
+                    else if (log.hasExam === false) examContent = "Keine";
+                    else examContent = log.examDate; // Altes System
+                    
+                    const card = document.createElement('div');
+                    card.className = 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 md:p-5 shadow-sm relative group overflow-hidden';
+                    
+                    const renderField = (title, content, iconHtml, colorClass = "text-slate-600 dark:text-slate-300") => {
+                        if (!content) return '';
+                        return `
+                            <div class="mb-3">
+                                <span class="text-[11px] md:text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 opacity-80 mb-1 ${colorClass}">
+                                    ${iconHtml} ${title}:
+                                </span>
+                                <p class="text-sm md:text-base text-slate-800 dark:text-slate-200 font-medium whitespace-pre-wrap pl-6 border-l-2 border-slate-100 dark:border-slate-700 ml-[7px] py-0.5">${content}</p>
+                            </div>
+                        `;
+                    };
+
+                    // Sichtbarkeit der Felder je nach Filter anpassen
+                    let showTopic = true, showMaterial = true, showHw = true, showExam = true, showNotes = true;
+                    if (currentFilterMode === 'hw') {
+                        showTopic = false; showMaterial = false; showExam = false; showNotes = false;
+                    } else if (currentFilterMode === 'exam') {
+                        showTopic = false; showMaterial = false; showHw = false; showNotes = false;
+                    }
+
+                    let fieldsHtml = '';
+                    if (log.subject === 'Allgemeine Info') {
+                        fieldsHtml += renderField("Info / Notiz", log.notes, `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`, "text-teal-600 dark:text-teal-400");
+                        if (log.hasDueDate && log.dueDate) {
+                            fieldsHtml += renderField("Erledigen bis", new Date(log.dueDate).toLocaleDateString('de-DE'), `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>`, "text-red-500 dark:text-red-400");
+                        }
+                    } else {
+                        if (showTopic) fieldsHtml += renderField("1. Thema", log.topic, `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path></svg>`, "text-indigo-600 dark:text-indigo-400");
+                        if (showMaterial) fieldsHtml += renderField("2. Material / Seiten", log.material, `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>`);
+                        if (showHw) fieldsHtml += renderField("3. Hausaufgaben", hwContent, `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>`, "text-orange-500 dark:text-orange-400");
+                        if (showExam) fieldsHtml += renderField("4. Nächste Klausur", examContent, `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>`, "text-red-500 dark:text-red-400");
+                        if (showNotes && log.notes) fieldsHtml += renderField("Sonstiges", log.notes, `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`);
+                    }
+
+                    card.innerHTML = `
+                        <div class="flex justify-between items-center mb-4 pb-3 border-b border-slate-100 dark:border-slate-700/50">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-lg shadow-inner shrink-0">
+                                    ${icon}
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-slate-800 dark:text-white">${log.subject}</h3>
+                                    <p class="text-xs text-slate-500 dark:text-slate-400">${dateStr}</p>
+                                </div>
+                            </div>
+                            <button onclick="window.deleteLog('${log.id}')" class="text-slate-300 dark:text-slate-600 hover:text-red-500 dark:hover:text-red-400 transition-colors p-2" title="Löschen">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            </button>
+                        </div>
+                        
+                        <div class="space-y-1">
+                            ${fieldsHtml}
+                        </div>
+                    `;
+                    logsContainer.appendChild(card);
+                });
+            }
+
+            window.deleteLog = async (logId) => {
+                if (!currentUser || !currentProfile) return;
+                try {
+                    const collectionName = 'school_logs_' + currentProfile.toLowerCase();
+                    const logRef = doc(db, 'artifacts', appId, 'public', 'data', collectionName, logId);
+                    await deleteDoc(logRef);
+                    showToast("Eintrag gelöscht", "error");
+                } catch (error) { console.error("Error deleting: ", error); }
+            };
+
+            let toastTimeout;
+            window.showToast = function(message, type = "success") {
+                const toast = document.getElementById('toast');
+                const toastMsg = document.getElementById('toast-message');
+                const toastIcon = document.getElementById('toast-icon');
+                
+                toastMsg.innerText = message;
+                
+                if (type === "error") {
+                    toastIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>`;
+                    toastIcon.classList.replace('text-green-400', 'text-red-400');
+                } else {
+                    toastIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>`;
+                    toastIcon.classList.replace('text-red-400', 'text-green-400');
+                }
+
+                toast.classList.remove('translate-y-24', 'opacity-0');
+                clearTimeout(toastTimeout);
+                toastTimeout = setTimeout(() => {
+                    toast.classList.add('translate-y-24', 'opacity-0');
+                }, 3000);
+            };
+            
+        } catch(globalError) {
+            console.error("Global Init Error:", globalError);
+            document.body.innerHTML += `<div style="position:fixed;bottom:10px;left:10px;background:red;color:white;padding:10px;z-index:9999;">Error: ${globalError.message}</div>`;
+        }
+    </script>
+</body>
+</html>
