@@ -223,13 +223,13 @@
                     <!-- 1. Thema -->
                     <div class="space-y-1.5">
                         <label for="w-topic" class="block font-semibold text-slate-700 dark:text-slate-200">1. Welches Thema habt ihr heute bearbeitet?</label>
-                        <input type="text" id="w-topic" required placeholder="z.B. Bruchrechnen, Ägypten..." class="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-slate-500">
+                        <textarea id="w-topic" rows="3" required placeholder="z.B. Bruchrechnen, Ägypten..." class="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 resize-none overflow-hidden"></textarea>
                     </div>
 
                     <!-- 2. Material -->
                     <div class="space-y-1.5">
                         <label for="w-material" class="block font-semibold text-slate-700 dark:text-slate-200">2. Welche Seiten im Buch, Arbeitsheft oder auf dem Arbeitsblatt?</label>
-                        <input type="text" id="w-material" placeholder="z.B. Buch S. 45 Nr. 2a-c" class="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-slate-500">
+                        <textarea id="w-material" rows="3" placeholder="z.B. Buch S. 45 Nr. 2a-c" class="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 resize-none overflow-hidden"></textarea>
                     </div>
 
                     <!-- 3. Hausaufgaben -->
@@ -248,7 +248,7 @@
                         <div id="w-homework-details" class="hidden space-y-4 pl-4 border-l-2 border-indigo-200 dark:border-indigo-700 mt-2">
                             <div>
                                 <label for="w-homework-text" class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1 block">Was muss gemacht werden?</label>
-                                <textarea id="w-homework-text" rows="2" placeholder="z.B. Vokabeln S. 120 abschreiben..." class="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-slate-800 dark:text-white resize-none dark:placeholder-slate-500"></textarea>
+                                <textarea id="w-homework-text" rows="3" placeholder="z.B. Vokabeln S. 120 abschreiben..." class="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-slate-800 dark:text-white resize-none dark:placeholder-slate-500 overflow-hidden"></textarea>
                             </div>
                             <div>
                                 <label for="w-homework-date" class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1 block">Bis wann?</label>
@@ -294,7 +294,7 @@
                         <div id="w-exam-details" class="hidden space-y-4 pl-4 border-l-2 border-indigo-200 dark:border-indigo-700 mt-2">
                             <div>
                                 <label for="w-exam-text" class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1 block">Welche Themen kommen dran?</label>
-                                <textarea id="w-exam-text" rows="2" placeholder="z.B. Brüche addieren, Kürzen..." class="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-slate-800 dark:text-white resize-none dark:placeholder-slate-500"></textarea>
+                                <textarea id="w-exam-text" rows="3" placeholder="z.B. Brüche addieren, Kürzen..." class="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-slate-800 dark:text-white resize-none dark:placeholder-slate-500 overflow-hidden"></textarea>
                             </div>
                             <div>
                                 <label for="w-exam-date" class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1 block">Wann ist die Arbeit?</label>
@@ -338,7 +338,7 @@
                 <form id="general-info-form" class="p-5 md:p-8 flex flex-col gap-6">
                     <div class="space-y-1.5">
                         <label for="g-notes" class="block font-semibold text-slate-700 dark:text-slate-200">Worum geht es?</label>
-                        <textarea id="g-notes" rows="3" required placeholder="z.B. Elternbrief unterschreiben, Material für Ausflug mitbringen..." class="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-teal-500 outline-none transition-all text-slate-800 dark:text-white resize-none dark:placeholder-slate-500"></textarea>
+                        <textarea id="g-notes" rows="3" required placeholder="z.B. Elternbrief unterschreiben, Material für Ausflug mitbringen..." class="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-teal-500 outline-none transition-all text-slate-800 dark:text-white resize-none dark:placeholder-slate-500 overflow-hidden"></textarea>
                     </div>
                     
                     <div class="space-y-3">
@@ -447,6 +447,103 @@
         </section>
     </main>
 
+    <!-- Modals (Löschen & Bearbeiten) -->
+    
+    <!-- Sicherheitsabfrage Löschen -->
+    <div id="delete-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex-col items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-sm p-6 shadow-2xl flex flex-col items-center text-center">
+            <div class="w-16 h-16 bg-red-100 dark:bg-red-900/30 text-red-500 rounded-full flex items-center justify-center mb-4">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+            </div>
+            <h3 class="text-xl font-bold text-slate-800 dark:text-white mb-2">Eintrag löschen?</h3>
+            <p class="text-slate-500 dark:text-slate-400 text-sm mb-6">Möchtest du diesen Eintrag wirklich löschen? Das kann nicht rückgängig gemacht werden.</p>
+            <div class="flex gap-3 w-full">
+                <button type="button" onclick="cancelDelete()" class="flex-1 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 font-semibold py-3 rounded-xl transition-colors">Abbrechen</button>
+                <button type="button" onclick="executeDelete()" class="flex-1 bg-red-500 hover:bg-red-600 text-white font-semibold py-3 rounded-xl transition-colors shadow-md">Ja, löschen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fenster zum Bearbeiten -->
+    <div id="edit-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[60] hidden flex-col items-center justify-end sm:justify-center p-0 sm:p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-t-3xl sm:rounded-3xl w-full max-w-lg max-h-[85vh] sm:max-h-[90vh] shadow-2xl flex flex-col relative">
+           <div class="p-4 sm:p-5 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
+               <h3 class="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                   <span id="edit-modal-icon">✏️</span> <span id="edit-modal-title">Eintrag bearbeiten</span>
+               </h3>
+               <button type="button" onclick="window.closeEditModal()" class="p-2 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-full hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">
+                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+               </button>
+           </div>
+           
+           <form id="edit-form" class="p-4 sm:p-5 flex flex-col gap-6 overflow-y-auto custom-scrollbar">
+               <input type="hidden" id="edit-id">
+               <input type="hidden" id="edit-type">
+               
+               <div class="space-y-1.5">
+                   <label class="block font-semibold text-slate-700 dark:text-slate-200">Datum</label>
+                   <input type="date" id="edit-date" class="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-slate-800 dark:text-white">
+               </div>
+
+               <!-- Felder für Fächer -->
+               <div id="edit-fach-fields" class="flex flex-col gap-5">
+                   <div class="space-y-1.5">
+                       <label class="block font-semibold text-slate-700 dark:text-slate-200">1. Thema</label>
+                       <textarea id="edit-topic" rows="3" class="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-slate-800 dark:text-white resize-none overflow-hidden"></textarea>
+                   </div>
+                   <div class="space-y-1.5">
+                       <label class="block font-semibold text-slate-700 dark:text-slate-200">2. Material</label>
+                       <textarea id="edit-material" rows="3" class="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-slate-800 dark:text-white resize-none overflow-hidden"></textarea>
+                   </div>
+                   
+                   <div class="space-y-3 bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-100 dark:border-slate-700">
+                       <label class="block font-semibold text-slate-700 dark:text-slate-200">3. Hausaufgaben?</label>
+                       <div class="flex gap-6">
+                           <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="edit_has_hw" value="yes" class="w-5 h-5 text-indigo-600 focus:ring-indigo-500 dark:bg-slate-800 dark:border-slate-600"> <span class="font-medium text-slate-700 dark:text-slate-200">Ja</span></label>
+                           <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="edit_has_hw" value="no" class="w-5 h-5 text-indigo-600 focus:ring-indigo-500 dark:bg-slate-800 dark:border-slate-600"> <span class="font-medium text-slate-700 dark:text-slate-200">Nein</span></label>
+                       </div>
+                       <div id="edit-hw-details" class="hidden flex-col gap-3 mt-3 pt-3 border-t border-slate-200 dark:border-slate-700">
+                           <textarea id="edit-hw-text" rows="3" placeholder="Was muss gemacht werden?" class="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-slate-800 dark:text-white resize-none overflow-hidden"></textarea>
+                           <input type="date" id="edit-hw-date" class="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-slate-800 dark:text-white">
+                       </div>
+                   </div>
+
+                   <div class="space-y-3 bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-100 dark:border-slate-700">
+                       <label class="block font-semibold text-slate-700 dark:text-slate-200">4. Klausur geplant?</label>
+                       <div class="flex gap-6">
+                           <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="edit_has_exam" value="yes" class="w-5 h-5 text-indigo-600 focus:ring-indigo-500 dark:bg-slate-800 dark:border-slate-600"> <span class="font-medium text-slate-700 dark:text-slate-200">Ja</span></label>
+                           <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="edit_has_exam" value="no" class="w-5 h-5 text-indigo-600 focus:ring-indigo-500 dark:bg-slate-800 dark:border-slate-600"> <span class="font-medium text-slate-700 dark:text-slate-200">Nein</span></label>
+                       </div>
+                       <div id="edit-exam-details" class="hidden flex-col gap-3 mt-3 pt-3 border-t border-slate-200 dark:border-slate-700">
+                           <textarea id="edit-exam-text" rows="3" placeholder="Welche Themen kommen dran?" class="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-slate-800 dark:text-white resize-none overflow-hidden"></textarea>
+                           <input type="date" id="edit-exam-date" class="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-slate-800 dark:text-white">
+                       </div>
+                   </div>
+               </div>
+
+               <!-- Felder für Allgemeine Info -->
+               <div id="edit-general-fields" class="hidden flex-col gap-5">
+                   <div class="space-y-1.5">
+                       <label class="block font-semibold text-slate-700 dark:text-slate-200">Info / Notiz</label>
+                       <textarea id="edit-general-notes" rows="4" class="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-slate-800 dark:text-white resize-none overflow-hidden"></textarea>
+                   </div>
+                   <div class="space-y-3 bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-100 dark:border-slate-700">
+                       <label class="block font-semibold text-slate-700 dark:text-slate-200">Gibt es ein Datum?</label>
+                       <div class="flex gap-6">
+                           <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="edit_g_has_date" value="yes" class="w-5 h-5 text-indigo-600 focus:ring-indigo-500 dark:bg-slate-800 dark:border-slate-600"> <span class="font-medium text-slate-700 dark:text-slate-200">Ja</span></label>
+                           <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="edit_g_has_date" value="no" class="w-5 h-5 text-indigo-600 focus:ring-indigo-500 dark:bg-slate-800 dark:border-slate-600"> <span class="font-medium text-slate-700 dark:text-slate-200">Nein</span></label>
+                       </div>
+                       <input type="date" id="edit-general-date" class="hidden mt-3 w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-slate-800 dark:text-white">
+                   </div>
+               </div>
+
+               <button type="submit" id="edit-save-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-4 px-4 rounded-xl shadow-md transition-all active:scale-95 text-base sticky bottom-0">
+                   Änderungen speichern
+               </button>
+           </form>
+        </div>
+    </div>
+
     <!-- Notification Toast -->
     <div id="toast" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-slate-800 text-white px-6 py-3 rounded-2xl shadow-2xl translate-y-24 opacity-0 transition-all duration-300 z-50 flex items-center gap-3 font-medium w-[90%] max-w-sm">
         <svg id="toast-icon" class="w-5 h-5 text-green-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
@@ -493,7 +590,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, collection, addDoc, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, collection, addDoc, onSnapshot, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         try {
             // =========================================================================
@@ -572,6 +669,22 @@
             const examUpdateRadios = document.querySelectorAll('input[name="exam_update"]');
             const examDetails = document.getElementById('w-exam-details');
             
+            // --- NEU: Textfeld- & Tastatur-Logik (Enter macht Absatz, nicht speichern) ---
+            document.addEventListener('input', function(e) {
+                if(e.target.tagName.toLowerCase() === 'textarea') {
+                    e.target.style.height = 'auto'; // Kurz zurücksetzen
+                    e.target.style.height = (e.target.scrollHeight) + 'px'; // An Inhalt anpassen
+                }
+            });
+
+            document.addEventListener('keydown', function(e) {
+                // Wenn Enter in einem normalen Eingabefeld (z.B. Datum) gedrückt wird, blockieren wir das automatische Absenden
+                if (e.key === 'Enter' && e.target.tagName.toLowerCase() === 'input') {
+                    e.preventDefault(); 
+                }
+            });
+            // -----------------------------------------------------------------------------
+
             examRadios.forEach(r => r.addEventListener('change', (e) => {
                 if(e.target.value === 'yes') examDetails.classList.remove('hidden');
                 else examDetails.classList.add('hidden');
@@ -1303,9 +1416,14 @@
                                     <p class="text-xs text-slate-500 dark:text-slate-400">${dateStr}</p>
                                 </div>
                             </div>
-                            <button onclick="window.deleteLog('${log.id}')" class="text-slate-300 dark:text-slate-600 hover:text-red-500 dark:hover:text-red-400 transition-colors p-2" title="Löschen">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                            </button>
+                            <div class="flex gap-1 items-center">
+                                <button onclick="window.openEditModal('${log.id}')" class="text-slate-300 dark:text-slate-600 hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors p-2" title="Bearbeiten">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                                </button>
+                                <button onclick="window.confirmDelete('${log.id}')" class="text-slate-300 dark:text-slate-600 hover:text-red-500 dark:hover:text-red-400 transition-colors p-2" title="Löschen">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                </button>
+                            </div>
                         </div>
                         
                         <div class="space-y-1">
@@ -1316,15 +1434,185 @@
                 });
             }
 
-            window.deleteLog = async (logId) => {
-                if (!currentUser || !currentProfile) return;
+            // --- NEU: Lösch- und Bearbeiten-Logik ---
+            let logToDeleteId = null;
+            
+            window.confirmDelete = (logId) => {
+                logToDeleteId = logId;
+                const modal = document.getElementById('delete-modal');
+                modal.classList.remove('hidden'); modal.classList.add('flex');
+            };
+            
+            window.cancelDelete = () => {
+                logToDeleteId = null;
+                const modal = document.getElementById('delete-modal');
+                modal.classList.add('hidden'); modal.classList.remove('flex');
+            };
+            
+            window.executeDelete = async () => {
+                if (!currentUser || !currentProfile || !logToDeleteId) return;
                 try {
                     const collectionName = 'school_logs_' + currentProfile.toLowerCase();
-                    const logRef = doc(db, collectionName, logId);
+                    const logRef = doc(db, collectionName, logToDeleteId);
                     await deleteDoc(logRef);
                     showToast("Eintrag gelöscht", "error");
                 } catch (error) { console.error("Error deleting: ", error); }
+                window.cancelDelete();
             };
+
+            // Setup der Knöpfe im Bearbeiten-Fenster
+            document.querySelectorAll('input[name="edit_has_hw"]').forEach(r => r.addEventListener('change', (e) => {
+                const details = document.getElementById('edit-hw-details');
+                if(e.target.value === 'yes') { details.classList.remove('hidden'); details.classList.add('flex'); }
+                else { details.classList.add('hidden'); details.classList.remove('flex'); }
+            }));
+            
+            document.querySelectorAll('input[name="edit_has_exam"]').forEach(r => r.addEventListener('change', (e) => {
+                const details = document.getElementById('edit-exam-details');
+                if(e.target.value === 'yes') { details.classList.remove('hidden'); details.classList.add('flex'); }
+                else { details.classList.add('hidden'); details.classList.remove('flex'); }
+            }));
+            
+            document.querySelectorAll('input[name="edit_g_has_date"]').forEach(r => r.addEventListener('change', (e) => {
+                const dateInput = document.getElementById('edit-general-date');
+                if(e.target.value === 'yes') dateInput.classList.remove('hidden');
+                else dateInput.classList.add('hidden');
+            }));
+
+            // Fenster zum Bearbeiten öffnen & Daten füllen
+            window.openEditModal = (logId) => {
+                const log = allLogs.find(l => l.id === logId);
+                if(!log) return;
+                
+                document.getElementById('edit-id').value = log.id;
+                document.getElementById('edit-date').value = log.date;
+                document.getElementById('edit-modal-title').innerText = log.subject + " anpassen";
+                
+                const isGeneral = log.subject === 'Allgemeine Info';
+                document.getElementById('edit-type').value = isGeneral ? 'general' : 'fach';
+                
+                if (isGeneral) {
+                    document.getElementById('edit-fach-fields').classList.add('hidden');
+                    document.getElementById('edit-general-fields').classList.remove('hidden');
+                    document.getElementById('edit-general-fields').classList.add('flex');
+                    
+                    document.getElementById('edit-general-notes').value = log.notes || "";
+                    if (log.hasDueDate) {
+                        document.querySelector('input[name="edit_g_has_date"][value="yes"]').checked = true;
+                        document.getElementById('edit-general-date').classList.remove('hidden');
+                        document.getElementById('edit-general-date').value = log.dueDate || "";
+                    } else {
+                        document.querySelector('input[name="edit_g_has_date"][value="no"]').checked = true;
+                        document.getElementById('edit-general-date').classList.add('hidden');
+                        document.getElementById('edit-general-date').value = "";
+                    }
+                } else {
+                    document.getElementById('edit-general-fields').classList.add('hidden');
+                    document.getElementById('edit-general-fields').classList.remove('flex');
+                    document.getElementById('edit-fach-fields').classList.remove('hidden');
+                    document.getElementById('edit-fach-fields').classList.add('flex');
+                    
+                    document.getElementById('edit-topic').value = log.topic || "";
+                    document.getElementById('edit-material').value = log.material || "";
+                    
+                    if (log.hasHomework) {
+                        document.querySelector('input[name="edit_has_hw"][value="yes"]').checked = true;
+                        const hwd = document.getElementById('edit-hw-details');
+                        hwd.classList.remove('hidden'); hwd.classList.add('flex');
+                        document.getElementById('edit-hw-text').value = log.homeworkText || "";
+                        document.getElementById('edit-hw-date').value = log.homeworkDate || "";
+                    } else {
+                        document.querySelector('input[name="edit_has_hw"][value="no"]').checked = true;
+                        const hwd = document.getElementById('edit-hw-details');
+                        hwd.classList.add('hidden'); hwd.classList.remove('flex');
+                        document.getElementById('edit-hw-text').value = "";
+                        document.getElementById('edit-hw-date').value = "";
+                    }
+                    
+                    if (log.hasExam) {
+                        document.querySelector('input[name="edit_has_exam"][value="yes"]').checked = true;
+                        const exd = document.getElementById('edit-exam-details');
+                        exd.classList.remove('hidden'); exd.classList.add('flex');
+                        document.getElementById('edit-exam-text').value = log.examText || "";
+                        document.getElementById('edit-exam-date').value = log.examDate || "";
+                    } else {
+                        document.querySelector('input[name="edit_has_exam"][value="no"]').checked = true;
+                        const exd = document.getElementById('edit-exam-details');
+                        exd.classList.add('hidden'); exd.classList.remove('flex');
+                        document.getElementById('edit-exam-text').value = "";
+                        document.getElementById('edit-exam-date').value = "";
+                    }
+                }
+                
+                const modal = document.getElementById('edit-modal');
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                
+                // Höhe der Textfelder sofort an den Inhalt anpassen
+                setTimeout(() => {
+                    document.querySelectorAll('#edit-modal textarea').forEach(ta => {
+                        ta.style.height = 'auto';
+                        ta.style.height = ta.scrollHeight + 'px';
+                    });
+                }, 50);
+            };
+
+            window.closeEditModal = () => {
+                const modal = document.getElementById('edit-modal');
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            };
+
+            // Geänderte Daten in der Datenbank speichern
+            document.getElementById('edit-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                if (!currentUser || !currentProfile) return;
+                
+                const btn = document.getElementById('edit-save-btn');
+                const originalContent = btn.innerHTML;
+                btn.innerHTML = `<div class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> Speichert...`;
+                btn.disabled = true;
+
+                const logId = document.getElementById('edit-id').value;
+                const type = document.getElementById('edit-type').value;
+                const logDate = document.getElementById('edit-date').value;
+                
+                let updateData = { date: logDate };
+                
+                if (type === 'general') {
+                    const hasDate = document.querySelector('input[name="edit_g_has_date"]:checked').value === 'yes';
+                    updateData.notes = document.getElementById('edit-general-notes').value.trim();
+                    updateData.hasDueDate = hasDate;
+                    updateData.dueDate = hasDate ? document.getElementById('edit-general-date').value : "";
+                } else {
+                    const hasHw = document.querySelector('input[name="edit_has_hw"]:checked').value === 'yes';
+                    const hasExam = document.querySelector('input[name="edit_has_exam"]:checked').value === 'yes';
+                    
+                    updateData.topic = document.getElementById('edit-topic').value.trim();
+                    updateData.material = document.getElementById('edit-material').value.trim();
+                    updateData.hasHomework = hasHw;
+                    updateData.homeworkText = hasHw ? document.getElementById('edit-hw-text').value.trim() : "";
+                    updateData.homeworkDate = hasHw ? document.getElementById('edit-hw-date').value : "";
+                    updateData.hasExam = hasExam;
+                    updateData.examText = hasExam ? document.getElementById('edit-exam-text').value.trim() : "";
+                    updateData.examDate = hasExam ? document.getElementById('edit-exam-date').value : "";
+                }
+
+                try {
+                    const collectionName = 'school_logs_' + currentProfile.toLowerCase();
+                    const logRef = doc(db, collectionName, logId);
+                    await updateDoc(logRef, updateData); // Überschreibt die Daten
+                    window.showToast("Änderungen gespeichert!");
+                    window.closeEditModal();
+                } catch (error) {
+                    console.error("Error updating:", error);
+                    window.showToast("Fehler beim Speichern", "error");
+                } finally {
+                    btn.innerHTML = originalContent;
+                    btn.disabled = false;
+                }
+            });
+            // ----------------------------------------------
 
             let toastTimeout;
             window.showToast = function(message, type = "success") {
