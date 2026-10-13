@@ -2,15 +2,13 @@
 <html lang="de" class="light">
 <head>
     <meta charset="UTF-8">
-    <!-- Wichtig für Handys: Verhindert seltsames Zoomen und stellt die Breite korrekt ein -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lennox's Schul-Logbuch</title>
+    <title>Schul-Log</title>
     
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
-            darkMode: 'class' // Dies zwingt Tailwind, auf den Darkmode-Button zu hören!
+            darkMode: 'class'
         }
     </script>
     
@@ -19,17 +17,13 @@
     <style>
         body { 
             font-family: 'Inter', sans-serif; 
-            /* Fallback-Farben, falls Tailwind auf dem Handy blockiert wird */
             background-color: #f1f5f9; 
             color: #1e293b;
         }
-        /* Fallback für Darkmode ohne Tailwind */
         .dark body {
             background-color: #0f172a;
             color: #f8fafc;
         }
-        
-        /* Glass panel for light and dark modes */
         .glass-panel {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
@@ -39,33 +33,22 @@
             background: rgba(30, 41, 59, 0.85);
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
-
-        /* Custom scrollbar */
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; }
-        
-        /* Hidden class for SPA routing */
         .spa-hidden { display: none !important; }
-
-        /* Button Animations */
         .subject-btn { transition: all 0.2s; }
         .subject-btn:active { transform: scale(0.95); }
     </style>
 
-    <!-- Notfall-Skript: Zeigt Fehler an, falls das Handy etwas blockiert (statt schwarzem Bildschirm) -->
     <script>
         window.onerror = function(msg, url, lineNo, columnNo, error) {
-            const errDiv = document.createElement('div');
-            errDiv.style.cssText = 'position:fixed;top:0;left:0;width:100%;background:red;color:white;z-index:9999;padding:20px;font-family:sans-serif;';
-            errDiv.innerHTML = '<b>Fehler beim Laden:</b><br>' + msg + '<br><small>Bitte lade die Seite neu.</small>';
-            document.body.appendChild(errDiv);
+            console.error("Globaler Fehler:", msg, error);
             return false;
         };
     </script>
     
-    <!-- PWA & App Icons Meta Tags -->
     <meta name="theme-color" content="#4f46e5">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -88,24 +71,20 @@
             </div>
             
             <div class="flex items-center gap-2 md:gap-4">
-                <!-- Sync Status (kleiner auf dem Handy) -->
                 <div id="auth-status" class="hidden sm:flex text-xs font-medium bg-indigo-500/50 dark:bg-indigo-900/50 px-2 py-1 rounded-full items-center gap-1">
                     <div class="w-2 h-2 rounded-full bg-yellow-400 animate-pulse" id="auth-indicator"></div>
                     <span id="auth-text">Lädt...</span>
                 </div>
 
-                <!-- Theme Toggle -->
                 <button id="theme-toggle" class="p-2 rounded-full hover:bg-white/20 transition-colors" title="Dark/Light Mode">
                     <svg id="icon-sun" class="w-5 h-5 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
                     <svg id="icon-moon" class="w-5 h-5 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
                 </button>
 
-                <!-- Logout / Profil wechseln -->
                 <button id="logout-btn" onclick="logout()" class="hidden bg-white/20 hover:bg-white/30 text-white p-2 rounded-xl text-sm font-medium transition-all items-center shadow-sm" title="Profil wechseln">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
                 </button>
 
-                <!-- Navigation Button (Übersicht) -->
                 <button id="nav-btn" onclick="toggleNav()" class="hidden bg-white/20 hover:bg-white/30 text-white px-3 py-2 rounded-xl text-sm font-medium transition-all items-center gap-2 shadow-sm">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>
                     <span id="nav-btn-text">Übersicht</span>
@@ -125,18 +104,34 @@
                 <p class="text-slate-600 dark:text-slate-400">Wer loggt sich gerade ein?</p>
             </div>
             <div class="flex flex-row gap-4 sm:gap-6 w-full max-w-md mx-auto justify-center px-4">
-                <button onclick="loginAs('Lennox')" class="flex-1 glass-panel rounded-3xl p-4 sm:p-6 flex flex-col items-center gap-3 sm:gap-4 border-2 border-transparent hover:border-indigo-500 hover:shadow-xl transition-all group">
-                    <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-3xl sm:text-4xl group-hover:scale-110 transition-transform shadow-sm">
-                        👦
-                    </div>
-                    <span class="font-bold text-lg sm:text-xl text-slate-800 dark:text-white">Lennox</span>
-                </button>
-                <button onclick="loginAs('Nalia')" class="flex-1 glass-panel rounded-3xl p-4 sm:p-6 flex flex-col items-center gap-3 sm:gap-4 border-2 border-transparent hover:border-pink-500 hover:shadow-xl transition-all group">
-                    <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-pink-100 dark:bg-pink-900/50 flex items-center justify-center text-3xl sm:text-4xl group-hover:scale-110 transition-transform shadow-sm">
-                        👧
-                    </div>
-                    <span class="font-bold text-lg sm:text-xl text-slate-800 dark:text-white">Nalia</span>
-                </button>
+                
+                <!-- Lennox Login Button mit Avatar -->
+                <div class="relative flex-1 group">
+                    <button onclick="loginAs('Lennox')" class="w-full glass-panel rounded-3xl p-4 sm:p-6 flex flex-col items-center gap-3 sm:gap-4 border-2 border-transparent hover:border-indigo-500 hover:shadow-xl transition-all">
+                        <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-3xl sm:text-4xl group-hover:scale-110 transition-transform shadow-sm relative">
+                            <span id="avatar-display-Lennox">👦</span>
+                        </div>
+                        <span class="font-bold text-lg sm:text-xl text-slate-800 dark:text-white">Lennox</span>
+                    </button>
+                    <!-- Edit Avatar Button -->
+                    <button onclick="window.openAvatarModal('Lennox')" class="absolute top-2 right-2 sm:top-4 sm:right-4 bg-white dark:bg-slate-700 p-2 rounded-full shadow-md text-slate-400 hover:text-indigo-500 transition-colors z-10 border border-slate-100 dark:border-slate-600" title="Avatar ändern">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                    </button>
+                </div>
+                
+                <!-- Nalia Login Button mit Avatar -->
+                <div class="relative flex-1 group">
+                    <button onclick="loginAs('Nalia')" class="w-full glass-panel rounded-3xl p-4 sm:p-6 flex flex-col items-center gap-3 sm:gap-4 border-2 border-transparent hover:border-pink-500 hover:shadow-xl transition-all">
+                        <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-pink-100 dark:bg-pink-900/50 flex items-center justify-center text-3xl sm:text-4xl group-hover:scale-110 transition-transform shadow-sm relative">
+                            <span id="avatar-display-Nalia">👧</span>
+                        </div>
+                        <span class="font-bold text-lg sm:text-xl text-slate-800 dark:text-white">Nalia</span>
+                    </button>
+                    <!-- Edit Avatar Button -->
+                    <button onclick="window.openAvatarModal('Nalia')" class="absolute top-2 right-2 sm:top-4 sm:right-4 bg-white dark:bg-slate-700 p-2 rounded-full shadow-md text-slate-400 hover:text-pink-500 transition-colors z-10 border border-slate-100 dark:border-slate-600" title="Avatar ändern">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                    </button>
+                </div>
             </div>
         </section>
 
@@ -150,7 +145,6 @@
             </div>
 
             <div class="glass-panel rounded-3xl p-5 md:p-8 shadow-xl mt-2 flex-grow">
-                <!-- Datum -->
                 <div class="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-slate-200 dark:border-slate-700 pb-5">
                     <div>
                         <h3 class="font-semibold text-slate-800 dark:text-white">Datum des Eintrags</h3>
@@ -158,7 +152,6 @@
                     <input type="date" id="entry-date" class="w-full sm:w-auto px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-slate-800 dark:text-white shadow-sm cursor-pointer">
                 </div>
 
-                <!-- Fächer-Grid -->
                 <div class="mb-6">
                     <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">Klicke alle an, für die du dir Notizen machen willst:</p>
                     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3" id="subject-grid">
@@ -171,7 +164,6 @@
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                 </button>
                 
-                <!-- NEU: Allgemeine Info -->
                 <button onclick="navigate('general-info')" class="w-full mt-4 glass-panel border-2 border-teal-500 hover:bg-teal-50 dark:hover:bg-teal-900/40 text-teal-700 dark:text-teal-300 font-semibold py-4 px-6 rounded-2xl shadow-sm transition-all flex justify-between items-center group">
                     <div class="flex items-center gap-3">
                         <span class="text-2xl">💡</span>
@@ -181,7 +173,6 @@
                 </button>
             </div>
 
-            <!-- NEU: Kalender / Anstehende Termine -->
             <div class="glass-panel rounded-3xl p-5 md:p-8 shadow-xl mt-2 flex-grow">
                 <h3 class="text-xl font-bold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
                     <svg class="w-6 h-6 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
@@ -206,7 +197,6 @@
             </div>
 
             <div class="glass-panel rounded-3xl shadow-xl flex flex-col border border-slate-200 dark:border-slate-700 overflow-hidden">
-                <!-- Header Fach -->
                 <div class="bg-indigo-50 dark:bg-slate-800 px-5 py-4 border-b border-indigo-100 dark:border-slate-700 flex items-center gap-4">
                     <div class="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center text-2xl font-bold shadow-md">
                         <span id="wizard-subject-icon">📝</span>
@@ -217,22 +207,18 @@
                     </div>
                 </div>
                 
-                <!-- Formular -->
                 <form id="wizard-form" class="p-5 md:p-8 flex flex-col gap-6">
                     
-                    <!-- 1. Thema -->
                     <div class="space-y-1.5">
                         <label for="w-topic" class="block font-semibold text-slate-700 dark:text-slate-200">1. Welches Thema habt ihr heute bearbeitet?</label>
                         <textarea id="w-topic" rows="3" required placeholder="z.B. Bruchrechnen, Ägypten..." class="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 resize-none overflow-hidden"></textarea>
                     </div>
 
-                    <!-- 2. Material -->
                     <div class="space-y-1.5">
                         <label for="w-material" class="block font-semibold text-slate-700 dark:text-slate-200">2. Welche Seiten im Buch, Arbeitsheft oder auf dem Arbeitsblatt?</label>
                         <textarea id="w-material" rows="3" placeholder="z.B. Buch S. 45 Nr. 2a-c" class="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 resize-none overflow-hidden"></textarea>
                     </div>
 
-                    <!-- 3. Hausaufgaben -->
                     <div class="space-y-3">
                         <label class="block font-semibold text-slate-700 dark:text-slate-200">3. Gab es Hausaufgaben?</label>
                         <div class="flex gap-6">
@@ -245,7 +231,7 @@
                                 <span class="text-slate-700 dark:text-slate-200 font-medium">Nein</span>
                             </label>
                         </div>
-                        <div id="w-homework-details" class="hidden space-y-4 pl-4 border-l-2 border-indigo-200 dark:border-indigo-700 mt-2">
+                        <div id="w-homework-details" class="hidden flex-col gap-4 pl-4 border-l-2 border-indigo-200 dark:border-indigo-700 mt-2">
                             <div>
                                 <label for="w-homework-text" class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1 block">Was muss gemacht werden?</label>
                                 <textarea id="w-homework-text" rows="3" placeholder="z.B. Vokabeln S. 120 abschreiben..." class="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-slate-800 dark:text-white resize-none dark:placeholder-slate-500 overflow-hidden"></textarea>
@@ -257,7 +243,6 @@
                         </div>
                     </div>
 
-                    <!-- 4. Klausur -->
                     <div class="space-y-3">
                         <div id="q4-standard">
                             <label class="block font-semibold text-slate-700 dark:text-slate-200">4. Steht eine Klassenarbeit/Klausur an?</label>
@@ -291,7 +276,7 @@
                             </div>
                         </div>
 
-                        <div id="w-exam-details" class="hidden space-y-4 pl-4 border-l-2 border-indigo-200 dark:border-indigo-700 mt-2">
+                        <div id="w-exam-details" class="hidden flex-col gap-4 pl-4 border-l-2 border-indigo-200 dark:border-indigo-700 mt-2">
                             <div>
                                 <label for="w-exam-text" class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1 block">Welche Themen kommen dran?</label>
                                 <textarea id="w-exam-text" rows="3" placeholder="z.B. Brüche addieren, Kürzen..." class="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-slate-800 dark:text-white resize-none dark:placeholder-slate-500 overflow-hidden"></textarea>
@@ -303,7 +288,6 @@
                         </div>
                     </div>
 
-                    <!-- Speichern Button -->
                     <div class="pt-4 mt-2 border-t border-slate-200 dark:border-slate-700">
                         <button type="submit" id="wizard-next-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-4 px-4 rounded-xl shadow-md transition-all flex justify-center items-center gap-2 transform active:scale-95 text-sm sm:text-base">
                             <span id="wizard-btn-text">Eintrag speichern & Nächstes Fach</span>
@@ -312,7 +296,7 @@
                     </div>
                 </form>
             </div>
-            <div class="h-10"></div> <!-- Abstand unten für Handys -->
+            <div class="h-10"></div>
         </section>
 
         <!-- ================= VIEW 4: ALLGEMEINE INFO ================= -->
@@ -370,7 +354,7 @@
             <div class="h-10"></div>
         </section>
 
-        <!-- ================= VIEW 3: ÜBERSICHT (Dashboard) ================= -->
+        <!-- ================= VIEW 3: ÜBERSICHT ================= -->
         <section id="view-dashboard" class="spa-hidden flex flex-col gap-6 w-full h-full">
             <div class="text-center space-y-2 mt-2">
                 <h2 class="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400">
@@ -379,7 +363,6 @@
                 <p class="text-slate-600 dark:text-slate-400">Was möchtest du sehen?</p>
             </div>
             
-            <!-- Große Filter Buttons (wie auf der Startseite) -->
             <div class="grid grid-cols-2 gap-3 mb-2" id="filter-buttons-container">
                 <button id="filter-btn-all" class="filter-btn p-3 sm:p-4 rounded-2xl border-2 text-left flex flex-col gap-1 sm:gap-2 shadow-sm transition-all bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-indigo-300 dark:hover:border-indigo-600">
                     <span class="text-xl sm:text-2xl">📋</span>
@@ -434,9 +417,7 @@
                 </div>
             </div>
 
-            <!-- Liste der Einträge -->
             <div id="logs-container" class="flex-grow flex flex-col gap-4 mt-2">
-                <!-- Fallback / Loading -->
                 <div class="text-center py-16 bg-white/50 dark:bg-slate-800/50 rounded-3xl border border-dashed border-slate-300 dark:border-slate-600" id="empty-state">
                     <div class="w-10 h-10 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mx-auto mb-4"></div>
                     <p class="text-slate-500 dark:text-slate-400">Lade Einträge...</p>
@@ -447,9 +428,8 @@
         </section>
     </main>
 
-    <!-- Modals (Löschen & Bearbeiten) -->
+    <!-- Modals (Löschen, Bearbeiten, Avatar) -->
     
-    <!-- Sicherheitsabfrage Löschen -->
     <div id="delete-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex-col items-center justify-center p-4">
         <div class="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-sm p-6 shadow-2xl flex flex-col items-center text-center">
             <div class="w-16 h-16 bg-red-100 dark:bg-red-900/30 text-red-500 rounded-full flex items-center justify-center mb-4">
@@ -464,7 +444,6 @@
         </div>
     </div>
 
-    <!-- Fenster zum Bearbeiten -->
     <div id="edit-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[60] hidden flex-col items-center justify-end sm:justify-center p-0 sm:p-4">
         <div class="bg-white dark:bg-slate-800 rounded-t-3xl sm:rounded-3xl w-full max-w-lg max-h-[85vh] sm:max-h-[90vh] shadow-2xl flex flex-col relative">
            <div class="p-4 sm:p-5 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
@@ -485,7 +464,6 @@
                    <input type="date" id="edit-date" class="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-slate-800 dark:text-white">
                </div>
 
-               <!-- Felder für Fächer -->
                <div id="edit-fach-fields" class="flex flex-col gap-5">
                    <div class="space-y-1.5">
                        <label class="block font-semibold text-slate-700 dark:text-slate-200">1. Thema</label>
@@ -521,7 +499,6 @@
                    </div>
                </div>
 
-               <!-- Felder für Allgemeine Info -->
                <div id="edit-general-fields" class="hidden flex-col gap-5">
                    <div class="space-y-1.5">
                        <label class="block font-semibold text-slate-700 dark:text-slate-200">Info / Notiz</label>
@@ -544,15 +521,29 @@
         </div>
     </div>
 
-    <!-- Notification Toast -->
+    <!-- Avatar Modal -->
+    <div id="avatar-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[70] hidden flex-col items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-sm shadow-2xl flex flex-col overflow-hidden">
+            <div class="p-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800">
+                <h3 class="text-lg font-bold text-slate-800 dark:text-white">Avatar aussuchen</h3>
+                <button type="button" onclick="window.closeAvatarModal()" class="p-2 bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-full hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors shadow-sm border border-slate-200 dark:border-slate-600">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <div class="p-4 max-h-[60vh] overflow-y-auto custom-scrollbar">
+                <div id="avatar-grid" class="grid grid-cols-5 gap-2 text-center">
+                    <!-- Wird per JS befüllt -->
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="toast" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-slate-800 text-white px-6 py-3 rounded-2xl shadow-2xl translate-y-24 opacity-0 transition-all duration-300 z-50 flex items-center gap-3 font-medium w-[90%] max-w-sm">
         <svg id="toast-icon" class="w-5 h-5 text-green-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
         <span id="toast-message" class="truncate">Gespeichert!</span>
     </div>
 
-    <!-- PWA Installation Logic -->
     <script>
-        // Erstellt das App-Manifest (Notwendig für die Installation) dynamisch
         const manifest = {
             "name": "Schul-Logbuch",
             "short_name": "Schul-Log",
@@ -571,11 +562,10 @@
         const manifestUrl = 'data:application/manifest+json;charset=utf-8,' + encodeURIComponent(manifestString);
         document.head.insertAdjacentHTML('beforeend', `<link rel="manifest" href="${manifestUrl}">`);
 
-        // Service Worker Registrierung (Macht die App installierbar)
         const swCode = `
             self.addEventListener('install', (e) => self.skipWaiting());
             self.addEventListener('activate', (e) => self.clients.claim());
-            self.addEventListener('fetch', (e) => {}); // Einfacher Pass-Through
+            self.addEventListener('fetch', (e) => {});
         `;
         const blob = new Blob([swCode], {type: 'application/javascript'});
         const swUrl = URL.createObjectURL(blob);
@@ -593,9 +583,7 @@
         import { getFirestore, doc, collection, addDoc, onSnapshot, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         try {
-            // =========================================================================
-            // HIER IST JETZT DEINE ECHTE DATENBANK EINGEBAUT!
-            // =========================================================================
+            // DEINE ECHTE FIREBASE CONFIG
             const firebaseConfig = {
               apiKey: "AIzaSyCfUHWwACCKn1lmsE1b2h56JsQJk-A_wvU",
               authDomain: "schullog-9336c.firebaseapp.com",
@@ -605,24 +593,58 @@
               appId: "1:680847926960:web:dc42865e8838dba9be7d75",
               measurementId: "G-5NG1NEBG0C"
             };
-            // =========================================================================
 
             const app = initializeApp(firebaseConfig);
             const db = getFirestore(app);
             const auth = getAuth(app);
 
-            // Application State
             let currentUser = null;
             let allLogs = [];
             let unsubscribeLogs = null;
             let currentProfile = localStorage.getItem('school_log_profile') || null;
             
-            // Wizard State
+            // Avatar Logik
+            let avatarTargetUser = null;
+            const AVATAR_LIST = ['👦','👧','👱‍♂️','👱‍♀️','🦸‍♂️','🦸‍♀️','👩‍🚀','👨‍🚀','🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐯','🦁','🐮','🐷','🐸','🐵','🦄','🦖','🐙','🚀','🛸','⚽','🎮','🎨','🎸','🎧','📚'];
+            
+            window.updateAvatarDisplays = () => {
+                const elLennox = document.getElementById('avatar-display-Lennox');
+                const elNalia = document.getElementById('avatar-display-Nalia');
+                if(elLennox) elLennox.innerText = localStorage.getItem('avatar_Lennox') || '👦';
+                if(elNalia) elNalia.innerText = localStorage.getItem('avatar_Nalia') || '👧';
+            };
+            window.updateAvatarDisplays();
+
+            window.openAvatarModal = (name) => {
+                avatarTargetUser = name;
+                const grid = document.getElementById('avatar-grid');
+                grid.innerHTML = AVATAR_LIST.map(emoji => `
+                    <button onclick="window.selectAvatar('${emoji}')" class="text-3xl p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl transition-all transform hover:scale-110 active:scale-95">
+                        ${emoji}
+                    </button>
+                `).join('');
+                document.getElementById('avatar-modal').classList.remove('hidden');
+                document.getElementById('avatar-modal').classList.add('flex');
+            };
+
+            window.closeAvatarModal = () => {
+                document.getElementById('avatar-modal').classList.add('hidden');
+                document.getElementById('avatar-modal').classList.remove('flex');
+                avatarTargetUser = null;
+            };
+
+            window.selectAvatar = (emoji) => {
+                if(avatarTargetUser) {
+                    localStorage.setItem('avatar_' + avatarTargetUser, emoji);
+                    window.updateAvatarDisplays();
+                }
+                window.closeAvatarModal();
+            };
+
             let selectedSubjects = [];
             let currentSubjectIndex = 0;
             let currentEntryDate = "";
 
-            // Alle Fächer aus Lennox' Stundenplan (Gymnasium Hummelsbüttel)
             const ALL_SUBJECTS = [
                 "Kunst", "Geschichte", "Latein", "Klassenrat", 
                 "Deutsch", "Religion", "Musik", "Mathe", 
@@ -636,7 +658,15 @@
                 "Allgemeine Info": "💡"
             };
 
-            // DOM Elements
+            const HAMBURG_HOLIDAYS = [
+                { name: "Herbstferien", start: "2026-10-19", end: "2026-10-30" },
+                { name: "Weihnachtsferien", start: "2026-12-18", end: "2027-01-04" },
+                { name: "Halbjahrespause", start: "2027-01-29", end: "2027-01-29" },
+                { name: "Frühjahrsferien", start: "2027-03-01", end: "2027-03-12" },
+                { name: "Maiferien", start: "2027-05-06", end: "2027-05-14" },
+                { name: "Sommerferien", start: "2027-07-01", end: "2027-08-11" }
+            ];
+
             const themeToggle = document.getElementById('theme-toggle');
             const iconSun = document.getElementById('icon-sun');
             const iconMoon = document.getElementById('icon-moon');
@@ -657,47 +687,42 @@
             const startWizardBtn = document.getElementById('start-wizard-btn');
             const dateInput = document.getElementById('entry-date');
 
-            // Toggle Logic für Formular
             const hwRadios = document.querySelectorAll('input[name="has_homework"]');
             const hwDetails = document.getElementById('w-homework-details');
             hwRadios.forEach(r => r.addEventListener('change', (e) => {
-                if(e.target.value === 'yes') hwDetails.classList.remove('hidden');
-                else hwDetails.classList.add('hidden');
+                if(e.target.value === 'yes') { hwDetails.classList.remove('hidden'); hwDetails.classList.add('flex'); }
+                else { hwDetails.classList.add('hidden'); hwDetails.classList.remove('flex'); }
             }));
 
             const examRadios = document.querySelectorAll('input[name="has_exam"]');
             const examUpdateRadios = document.querySelectorAll('input[name="exam_update"]');
             const examDetails = document.getElementById('w-exam-details');
             
-            // --- NEU: Textfeld- & Tastatur-Logik (Enter macht Absatz, nicht speichern) ---
             document.addEventListener('input', function(e) {
                 if(e.target.tagName.toLowerCase() === 'textarea') {
-                    e.target.style.height = 'auto'; // Kurz zurücksetzen
-                    e.target.style.height = (e.target.scrollHeight) + 'px'; // An Inhalt anpassen
+                    e.target.style.height = 'auto'; 
+                    e.target.style.height = (e.target.scrollHeight) + 'px'; 
                 }
             });
 
             document.addEventListener('keydown', function(e) {
-                // Wenn Enter in einem normalen Eingabefeld (z.B. Datum) gedrückt wird, blockieren wir das automatische Absenden
                 if (e.key === 'Enter' && e.target.tagName.toLowerCase() === 'input') {
                     e.preventDefault(); 
                 }
             });
-            // -----------------------------------------------------------------------------
 
             examRadios.forEach(r => r.addEventListener('change', (e) => {
-                if(e.target.value === 'yes') examDetails.classList.remove('hidden');
-                else examDetails.classList.add('hidden');
+                if(e.target.value === 'yes') { examDetails.classList.remove('hidden'); examDetails.classList.add('flex'); }
+                else { examDetails.classList.add('hidden'); examDetails.classList.remove('flex'); }
             }));
 
             if(examUpdateRadios) {
                 examUpdateRadios.forEach(r => r.addEventListener('change', (e) => {
-                    if(e.target.value === 'edit') examDetails.classList.remove('hidden');
-                    else examDetails.classList.add('hidden');
+                    if(e.target.value === 'edit') { examDetails.classList.remove('hidden'); examDetails.classList.add('flex'); }
+                    else { examDetails.classList.add('hidden'); examDetails.classList.remove('flex'); }
                 }));
             }
 
-            // Theme Logic (Dark/Light Mode)
             function initTheme() {
                 const isDark = localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches);
                 if (isDark) {
@@ -726,23 +751,18 @@
             });
             initTheme();
 
-            // Set Date to Today
             dateInput.valueAsDate = new Date();
 
-            // View Navigation
-            let currentView = 'login';
             window.navigate = (viewId) => {
-                currentView = viewId;
-                viewLogin.classList.add('spa-hidden');
-                viewWelcome.classList.add('spa-hidden');
-                viewWizard.classList.add('spa-hidden');
-                if(viewGeneralInfo) viewGeneralInfo.classList.add('spa-hidden');
-                viewDashboard.classList.add('spa-hidden');
+                const views = ['login', 'welcome', 'wizard', 'general-info', 'dashboard'];
+                views.forEach(v => {
+                    const el = document.getElementById(`view-${v}`);
+                    if(el) el.classList.add('spa-hidden');
+                });
 
                 document.getElementById(`view-${viewId}`).classList.remove('spa-hidden');
                 window.scrollTo(0, 0);
 
-                // Menü-Knöpfe steuern (sollen im Login versteckt sein)
                 if (viewId === 'login') {
                     navBtn.classList.add('hidden');
                     navBtn.classList.remove('flex');
@@ -763,22 +783,18 @@
             };
 
             window.toggleNav = () => {
-                if (currentView === 'dashboard') {
+                if (!document.getElementById('view-dashboard').classList.contains('spa-hidden')) {
                     navigate('welcome');
                 } else {
                     navigate('dashboard');
                 }
             };
 
-            // Login Logic
             window.loginAs = (name) => {
                 currentProfile = name;
                 localStorage.setItem('school_log_profile', name);
-                
                 appTitle.innerText = name + "'s Log";
                 welcomeName.innerText = name;
-                
-                // Lade nur die Daten für das ausgewählte Kind
                 if(currentUser) loadLogs();
                 navigate('welcome');
             };
@@ -786,15 +802,11 @@
             window.logout = () => {
                 currentProfile = null;
                 localStorage.removeItem('school_log_profile');
-                if(unsubscribeLogs) {
-                    unsubscribeLogs();
-                    unsubscribeLogs = null;
-                }
+                if(unsubscribeLogs) { unsubscribeLogs(); unsubscribeLogs = null; }
                 allLogs = [];
                 navigate('login');
             };
 
-            // Start: Wenn man schon eingeloggt ist, direkt weiterleiten
             if (currentProfile) {
                 appTitle.innerText = currentProfile + "'s Log";
                 welcomeName.innerText = currentProfile;
@@ -803,25 +815,17 @@
                 navigate('login');
             }
 
-            // Render Subject Grid
             function renderSubjectGrid() {
                 subjectGrid.innerHTML = '';
                 ALL_SUBJECTS.forEach(subject => {
                     const btn = document.createElement('button');
                     btn.type = 'button';
-                    
                     const isSelected = selectedSubjects.includes(subject);
                     const baseClasses = "subject-btn w-full p-3 sm:p-4 rounded-2xl border-2 text-left flex flex-col gap-1 sm:gap-2 bg-white dark:bg-slate-800 shadow-sm";
                     const selectedClasses = "border-indigo-500 bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 shadow-md";
                     const unselectedClasses = "border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-indigo-300 dark:hover:border-indigo-600";
-                    
                     btn.className = `${baseClasses} ${isSelected ? selectedClasses : unselectedClasses}`;
-                    
-                    btn.innerHTML = `
-                        <span class="text-xl sm:text-2xl">${SUBJECT_ICONS[subject] || '📘'}</span>
-                        <span class="font-semibold text-xs sm:text-sm truncate w-full">${subject}</span>
-                    `;
-                    
+                    btn.innerHTML = `<span class="text-xl sm:text-2xl">${SUBJECT_ICONS[subject] || '📘'}</span><span class="font-semibold text-xs sm:text-sm truncate w-full">${subject}</span>`;
                     btn.onclick = () => {
                         if (selectedSubjects.includes(subject)) {
                             selectedSubjects = selectedSubjects.filter(s => s !== subject);
@@ -832,12 +836,10 @@
                     };
                     subjectGrid.appendChild(btn);
                 });
-                
                 startWizardBtn.disabled = selectedSubjects.length === 0;
             }
             renderSubjectGrid();
 
-            // Start Wizard
             startWizardBtn.addEventListener('click', () => {
                 if (selectedSubjects.length === 0) return;
                 currentEntryDate = dateInput.value;
@@ -865,12 +867,12 @@
 
                 document.getElementById('wizard-form').reset();
                 
-                // Formular-Zusatzfelder wieder verstecken
                 document.querySelector('input[name="has_homework"][value="no"]').checked = true;
                 document.getElementById('w-homework-details').classList.add('hidden');
+                document.getElementById('w-homework-details').classList.remove('flex');
                 
-                // Q4: Prüfen ob es schon eine Klausur in der Zukunft gibt
                 document.getElementById('w-exam-details').classList.add('hidden');
+                document.getElementById('w-exam-details').classList.remove('flex');
                 const today = new Date();
                 today.setHours(0,0,0,0);
                 
@@ -899,16 +901,11 @@
 
             document.getElementById('wizard-form').addEventListener('submit', async (e) => {
                 e.preventDefault();
-                if (!currentUser) {
-                    showToast("Bitte warte auf Cloud-Verbindung...", "error");
-                    return;
-                }
+                if (!currentUser) { showToast("Bitte warte auf Cloud-Verbindung...", "error"); return; }
 
                 const subject = selectedSubjects[currentSubjectIndex];
-                
                 const hasHomework = document.querySelector('input[name="has_homework"]:checked').value === 'yes';
                 
-                // Klausur-Logik anpassen (neu oder aktualisiert)
                 let hasExam = false;
                 let examText = "";
                 let examDate = "";
@@ -922,7 +919,7 @@
                     } else {
                         examText = document.getElementById('w-exam-text').value.trim();
                         examDate = document.getElementById('w-exam-date').value;
-                        hasExam = examText !== "" && examDate !== ""; // Falls geleert, wird Klausur entfernt
+                        hasExam = examText !== "" && examDate !== "";
                     }
                 } else {
                     hasExam = document.querySelector('input[name="has_exam"]:checked').value === 'yes';
@@ -935,15 +932,13 @@
                     subject: subject,
                     topic: document.getElementById('w-topic').value.trim(),
                     material: document.getElementById('w-material').value.trim(),
-                    
                     hasHomework: hasHomework,
                     homeworkText: hasHomework ? document.getElementById('w-homework-text').value.trim() : "",
                     homeworkDate: hasHomework ? document.getElementById('w-homework-date').value : "",
-                    
+                    homeworkDone: false,
                     hasExam: hasExam,
                     examText: examText,
                     examDate: examDate,
-                    
                     createdAt: new Date().toISOString()
                 };
 
@@ -953,15 +948,11 @@
                 btn.disabled = true;
 
                 try {
-                    // Speichert in der echten eigenen Datenbank ab!
                     const collectionName = 'school_logs_' + currentProfile.toLowerCase();
                     const logsRef = collection(db, collectionName);
                     await addDoc(logsRef, payload);
                     
                     showToast(`${subject} gespeichert!`);
-                    
-                    // GANZ WICHTIG: Button vor dem Laden des nächsten Schritts wiederherstellen,
-                    // damit die ID 'wizard-btn-text' wieder im HTML-Baum ist!
                     btn.innerHTML = originalContent;
                     btn.disabled = false;
                     
@@ -981,7 +972,6 @@
                 }
             });
             
-            // Logik für "Allgemeine Info" Formular
             const gDateRadios = document.querySelectorAll('input[name="g_has_date"]');
             const gDateDetails = document.getElementById('g-date-details');
             if(gDateRadios.length > 0) {
@@ -1032,7 +1022,6 @@
                 });
             }
 
-            // Auth Logic
             async function authenticate() {
                 try {
                     await signInAnonymously(auth);
@@ -1062,12 +1051,9 @@
             authenticate();
 
             function loadLogs() {
-                if (!currentUser || !currentProfile) return; // Stoppen, wenn keiner eingeloggt ist
+                if (!currentUser || !currentProfile) return;
                 
-                // Alten Live-Stream trennen, falls wir das Profil wechseln
-                if (unsubscribeLogs) {
-                    unsubscribeLogs();
-                }
+                if (unsubscribeLogs) { unsubscribeLogs(); }
 
                 const collectionName = 'school_logs_' + currentProfile.toLowerCase();
                 const logsRef = collection(db, collectionName);
@@ -1080,15 +1066,15 @@
                     allLogs.sort((a, b) => new Date(b.date) - new Date(a.date));
                     updateSubjectFilterList();
                     renderLogs();
-                    renderUpcomingEvents(); // Kalender aktualisieren
+                    renderUpcomingEvents(); 
                 }, (error) => {
                     console.error("Error fetching logs: ", error);
                 });
             }
 
-            // FILTER LOGIC NEU
+            // FILTER LOGIC
             const logsContainer = document.getElementById('logs-container');
-            let currentFilterMode = null; // Startet auf "null" (keine Auswahl)
+            let currentFilterMode = null; 
             let selectedFilterSubjects = [];
             let selectedWeekStart = null;
             let selectedWeekEnd = null;
@@ -1135,7 +1121,6 @@
 
             if(filterBtnAll) filterBtnAll.addEventListener('click', () => { currentFilterMode = 'all'; setActiveButton(filterBtnAll); renderLogs(); });
             
-            // Wochen-Filter Logik
             if(filterBtnWeek) {
                 filterBtnWeek.addEventListener('click', () => {
                     filterWeekMenu.classList.toggle('hidden');
@@ -1183,10 +1168,8 @@
                         selectedWeekStart = range.start;
                         selectedWeekEnd = range.end;
                         currentFilterMode = 'week';
-                        
                         const [, weekNum] = weekVal.split('-W');
                         weekBtnText.innerText = `KW ${weekNum}`;
-                        
                         setActiveButton(filterBtnWeek);
                     }
                 } else {
@@ -1201,12 +1184,10 @@
             if(filterBtnExam) filterBtnExam.addEventListener('click', () => { currentFilterMode = 'exam'; setActiveButton(filterBtnExam); renderLogs(); });
             if(filterBtnGeneral) filterBtnGeneral.addEventListener('click', () => { currentFilterMode = 'general'; setActiveButton(filterBtnGeneral); renderLogs(); });
             
-            // Fächer Dropdown
             if(filterBtnSubjects) filterBtnSubjects.addEventListener('click', () => {
                 filterSubjectMenu.classList.toggle('hidden');
             });
 
-            // Schließe Menü, wenn außerhalb geklickt wird
             document.addEventListener('click', (e) => {
                 if(filterBtnSubjects && !filterBtnSubjects.contains(e.target) && !filterSubjectMenu.contains(e.target)) {
                     filterSubjectMenu.classList.add('hidden');
@@ -1248,8 +1229,18 @@
                 renderLogs();
             });
 
+            window.toggleHomework = async (logId, currentStatus) => {
+                if (!currentUser || !currentProfile) return;
+                try {
+                    const collectionName = 'school_logs_' + currentProfile.toLowerCase();
+                    const logRef = doc(db, collectionName, logId);
+                    await updateDoc(logRef, { homeworkDone: !currentStatus });
+                } catch (error) {
+                    console.error("Fehler beim Haken setzen: ", error);
+                    showToast("Fehler beim Speichern", "error");
+                }
+            };
 
-            // Funktion für den Terminkalender
             function renderUpcomingEvents() {
                 const container = document.getElementById('upcoming-events-list');
                 if(!container) return;
@@ -1260,17 +1251,31 @@
 
                 allLogs.forEach(log => {
                     if (log.hasHomework && log.homeworkDate) {
-                        events.push({ type: 'homework', date: new Date(log.homeworkDate + 'T12:00:00'), subject: log.subject, text: log.homeworkText });
+                        events.push({ id: log.id, type: 'homework', date: new Date(log.homeworkDate + 'T12:00:00'), subject: log.subject, text: log.homeworkText, done: log.homeworkDone || false });
                     }
                     if (log.hasExam && log.examDate) {
-                        events.push({ type: 'exam', date: new Date(log.examDate + 'T12:00:00'), subject: log.subject, text: log.examText });
+                        events.push({ id: log.id, type: 'exam', date: new Date(log.examDate + 'T12:00:00'), subject: log.subject, text: log.examText });
                     }
                     if (log.subject === 'Allgemeine Info' && log.hasDueDate && log.dueDate) {
-                        events.push({ type: 'general', date: new Date(log.dueDate + 'T12:00:00'), subject: 'Info/Notiz', text: log.notes });
+                        events.push({ id: log.id, type: 'general', date: new Date(log.dueDate + 'T12:00:00'), subject: 'Info/Notiz', text: log.notes });
+                    }
+                });
+                
+                HAMBURG_HOLIDAYS.forEach(h => {
+                    const startDate = new Date(h.start + 'T00:00:00');
+                    const endDate = new Date(h.end + 'T23:59:59');
+                    
+                    if (endDate >= today) {
+                        const sortDate = (startDate <= today && endDate >= today) ? today : startDate;
+                        events.push({
+                            type: 'holiday', 
+                            date: sortDate, 
+                            subject: h.name, 
+                            text: `${startDate.toLocaleDateString('de-DE')} - ${endDate.toLocaleDateString('de-DE')}` 
+                        });
                     }
                 });
 
-                // Ab heute filtern und chronologisch sortieren
                 events = events.filter(e => e.date >= today).sort((a, b) => a.date - b.date);
 
                 if (events.length === 0) {
@@ -1281,28 +1286,47 @@
                 container.innerHTML = events.map(e => {
                     const isExam = e.type === 'exam';
                     const isGeneral = e.type === 'general';
+                    const isHomework = e.type === 'homework';
+                    const isHoliday = e.type === 'holiday';
+                    
                     let icon = '📝';
                     let color = 'border-orange-400 bg-orange-50 dark:bg-orange-900/20';
                     let titleColor = 'text-orange-700 dark:text-orange-400';
                     let typeTag = '(HA)';
                     
-                    if (isExam) {
-                        icon = '⚠️'; color = 'border-red-400 bg-red-50 dark:bg-red-900/20'; titleColor = 'text-red-700 dark:text-red-400'; typeTag = '(Klausur)';
-                    } else if (isGeneral) {
-                        icon = '💡'; color = 'border-teal-400 bg-teal-50 dark:bg-teal-900/20'; titleColor = 'text-teal-700 dark:text-teal-400'; typeTag = '(Wichtig)';
-                    }
+                    if (isExam) { icon = '⚠️'; color = 'border-red-400 bg-red-50 dark:bg-red-900/20'; titleColor = 'text-red-700 dark:text-red-400'; typeTag = '(Klausur)'; } 
+                    else if (isGeneral) { icon = '💡'; color = 'border-teal-400 bg-teal-50 dark:bg-teal-900/20'; titleColor = 'text-teal-700 dark:text-teal-400'; typeTag = '(Wichtig)'; } 
+                    else if (isHoliday) { icon = '🌴'; color = 'border-green-500 bg-green-50 dark:bg-green-900/20'; titleColor = 'text-green-700 dark:text-green-400'; typeTag = '(Ferien)'; }
                     
                     const dateFormatted = e.date.toLocaleDateString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit' });
                     
+                    const textStyles = (isHomework && e.done) ? "line-through text-slate-400 dark:text-slate-500" : "text-slate-700 dark:text-slate-300";
+                    const cardOpacity = (isHomework && e.done) ? "opacity-60" : "opacity-100";
+                    
+                    let checkboxHtml = '';
+                    if (isHomework) {
+                        checkboxHtml = `
+                        <div class="mt-3 pt-3 border-t border-orange-200 dark:border-orange-800/50">
+                            <label class="flex items-center gap-3 cursor-pointer group w-max">
+                                <div class="relative flex items-center justify-center">
+                                    <input type="checkbox" onchange="window.toggleHomework('${e.id}', ${e.done ? 'true' : 'false'})" ${e.done ? 'checked' : ''} class="peer appearance-none w-6 h-6 border-2 border-slate-300 dark:border-slate-600 rounded-lg checked:bg-green-500 checked:border-green-500 transition-all cursor-pointer shadow-sm">
+                                    <svg class="w-4 h-4 text-white absolute opacity-0 peer-checked:opacity-100 pointer-events-none transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                                </div>
+                                <span class="text-sm font-semibold text-slate-600 dark:text-slate-300 transition-all peer-checked:text-green-600 dark:peer-checked:text-green-400">Erledigt</span>
+                            </label>
+                        </div>`;
+                    }
+                    
                     return `
-                        <div class="flex items-start gap-3 p-3 rounded-xl border-l-4 ${color} shadow-sm border border-slate-100 dark:border-slate-800">
+                        <div class="flex items-start gap-3 p-3 rounded-xl border-l-4 ${color} shadow-sm border border-slate-100 dark:border-slate-800 transition-all ${cardOpacity}">
                             <div class="text-xl mt-0.5">${icon}</div>
                             <div class="w-full">
                                 <div class="flex justify-between items-center w-full">
                                     <span class="font-bold text-sm ${titleColor}">${e.subject} ${typeTag}</span>
-                                    <span class="text-xs font-semibold text-slate-500">${dateFormatted}</span>
+                                    <span class="text-xs font-semibold text-slate-500">${isHoliday ? '' : dateFormatted}</span>
                                 </div>
-                                <p class="text-sm text-slate-700 dark:text-slate-300 mt-1">${e.text}</p>
+                                <p class="text-sm mt-1 whitespace-pre-wrap ${textStyles}">${e.text}</p>
+                                ${checkboxHtml}
                             </div>
                         </div>
                     `;
@@ -1313,7 +1337,7 @@
                 if (allLogs.length === 0) {
                     logsContainer.innerHTML = `
                         <div class="text-center py-16 bg-white/50 dark:bg-slate-800/50 rounded-3xl border border-dashed border-slate-300 dark:border-slate-600 mt-4">
-                            <svg class="w-12 h-12 text-slate-300 dark:text-slate-500 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                            <svg class="w-12 h-12 text-slate-300 dark:text-slate-500 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477-4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
                             <p class="text-slate-600 dark:text-slate-400 font-medium">Noch keine Einträge vorhanden.</p>
                         </div>`;
                     return;
@@ -1328,7 +1352,6 @@
                     return;
                 }
 
-                // Filter anwenden
                 let filteredLogs = allLogs;
                 const today = new Date();
                 
@@ -1357,16 +1380,17 @@
                     const dateStr = new Date(log.date).toLocaleDateString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' });
                     const icon = SUBJECT_ICONS[log.subject] || '📘';
                     
-                    // Fallback-Logik für alte vs neue Datenstruktur
                     let hwContent = "";
-                    if (log.hasHomework === true) hwContent = `${log.homeworkText}\n(Bis: ${new Date(log.homeworkDate + 'T12:00:00').toLocaleDateString('de-DE')})`;
-                    else if (log.hasHomework === false) hwContent = "Keine";
-                    else hwContent = log.homework; // Altes System
+                    if (log.hasHomework === true) {
+                        const doneTag = log.homeworkDone ? " ✅ Erledigt" : "";
+                        hwContent = `${log.homeworkText}\n(Bis: ${new Date(log.homeworkDate + 'T12:00:00').toLocaleDateString('de-DE')})${doneTag}`;
+                    } else if (log.hasHomework === false) hwContent = "Keine";
+                    else hwContent = log.homework; 
 
                     let examContent = "";
                     if (log.hasExam === true) examContent = `Themen: ${log.examText}\n(Am: ${new Date(log.examDate + 'T12:00:00').toLocaleDateString('de-DE')})`;
                     else if (log.hasExam === false) examContent = "Keine";
-                    else examContent = log.examDate; // Altes System
+                    else examContent = log.examDate; 
                     
                     const card = document.createElement('div');
                     card.className = 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 md:p-5 shadow-sm relative group overflow-hidden';
@@ -1383,13 +1407,9 @@
                         `;
                     };
 
-                    // Sichtbarkeit der Felder je nach Filter anpassen
                     let showTopic = true, showMaterial = true, showHw = true, showExam = true, showNotes = true;
-                    if (currentFilterMode === 'hw') {
-                        showTopic = false; showMaterial = false; showExam = false; showNotes = false;
-                    } else if (currentFilterMode === 'exam') {
-                        showTopic = false; showMaterial = false; showHw = false; showNotes = false;
-                    }
+                    if (currentFilterMode === 'hw') { showTopic = false; showMaterial = false; showExam = false; showNotes = false; } 
+                    else if (currentFilterMode === 'exam') { showTopic = false; showMaterial = false; showHw = false; showNotes = false; }
 
                     let fieldsHtml = '';
                     if (log.subject === 'Allgemeine Info') {
@@ -1399,7 +1419,7 @@
                         }
                     } else {
                         if (showTopic) fieldsHtml += renderField("1. Thema", log.topic, `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path></svg>`, "text-indigo-600 dark:text-indigo-400");
-                        if (showMaterial) fieldsHtml += renderField("2. Material / Seiten", log.material, `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>`);
+                        if (showMaterial) fieldsHtml += renderField("2. Material / Seiten", log.material, `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477-4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>`);
                         if (showHw) fieldsHtml += renderField("3. Hausaufgaben", hwContent, `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>`, "text-orange-500 dark:text-orange-400");
                         if (showExam) fieldsHtml += renderField("4. Nächste Klausur", examContent, `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>`, "text-red-500 dark:text-red-400");
                         if (showNotes && log.notes) fieldsHtml += renderField("Sonstiges", log.notes, `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`);
@@ -1425,7 +1445,6 @@
                                 </button>
                             </div>
                         </div>
-                        
                         <div class="space-y-1">
                             ${fieldsHtml}
                         </div>
@@ -1434,7 +1453,6 @@
                 });
             }
 
-            // --- NEU: Lösch- und Bearbeiten-Logik ---
             let logToDeleteId = null;
             
             window.confirmDelete = (logId) => {
@@ -1460,7 +1478,6 @@
                 window.cancelDelete();
             };
 
-            // Setup der Knöpfe im Bearbeiten-Fenster
             document.querySelectorAll('input[name="edit_has_hw"]').forEach(r => r.addEventListener('change', (e) => {
                 const details = document.getElementById('edit-hw-details');
                 if(e.target.value === 'yes') { details.classList.remove('hidden'); details.classList.add('flex'); }
@@ -1479,7 +1496,6 @@
                 else dateInput.classList.add('hidden');
             }));
 
-            // Fenster zum Bearbeiten öffnen & Daten füllen
             window.openEditModal = (logId) => {
                 const log = allLogs.find(l => l.id === logId);
                 if(!log) return;
@@ -1548,7 +1564,6 @@
                 modal.classList.remove('hidden');
                 modal.classList.add('flex');
                 
-                // Höhe der Textfelder sofort an den Inhalt anpassen
                 setTimeout(() => {
                     document.querySelectorAll('#edit-modal textarea').forEach(ta => {
                         ta.style.height = 'auto';
@@ -1563,7 +1578,6 @@
                 modal.classList.remove('flex');
             };
 
-            // Geänderte Daten in der Datenbank speichern
             document.getElementById('edit-form').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 if (!currentUser || !currentProfile) return;
@@ -1601,7 +1615,7 @@
                 try {
                     const collectionName = 'school_logs_' + currentProfile.toLowerCase();
                     const logRef = doc(db, collectionName, logId);
-                    await updateDoc(logRef, updateData); // Überschreibt die Daten
+                    await updateDoc(logRef, updateData);
                     window.showToast("Änderungen gespeichert!");
                     window.closeEditModal();
                 } catch (error) {
@@ -1612,7 +1626,6 @@
                     btn.disabled = false;
                 }
             });
-            // ----------------------------------------------
 
             let toastTimeout;
             window.showToast = function(message, type = "success") {
@@ -1636,6 +1649,46 @@
                     toast.classList.add('translate-y-24', 'opacity-0');
                 }, 3000);
             };
+
+            // =========================================================================
+            // 🔥 NEU: DER INTELLIGENTE FERIEN-WARNER
+            // =========================================================================
+            function checkHoliday(dateString) {
+                if(!dateString) return null;
+                const d = new Date(dateString);
+                d.setHours(0,0,0,0);
+                
+                for(let h of HAMBURG_HOLIDAYS) {
+                    const start = new Date(h.start + 'T00:00:00');
+                    const end = new Date(h.end + 'T23:59:59');
+                    if(d >= start && d <= end) return h.name;
+                }
+                return null;
+            }
+
+            // Finde alle Datums-Eingabefelder in der App und füge den Warner an
+            document.querySelectorAll('input[type="date"]').forEach(input => {
+                // Erstelle das grüne Hinweis-Kästchen (erstmal unsichtbar)
+                const warningDiv = document.createElement('div');
+                warningDiv.className = 'hidden mt-2 p-3 bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-sm font-semibold rounded-xl border border-green-200 dark:border-green-800/50 items-center gap-2 shadow-sm transition-all';
+                
+                // Füge das Kästchen direkt nach dem jeweiligen Eingabefeld ein
+                input.parentNode.insertBefore(warningDiv, input.nextSibling);
+
+                // Wenn sich das Datum ändert, prüfe ob es in den Ferien liegt
+                input.addEventListener('change', (e) => {
+                    const holiday = checkHoliday(e.target.value);
+                    if(holiday) {
+                        warningDiv.innerHTML = `<span class="text-xl">🌴</span> <span>Juhu! Dieses Datum liegt in den <b>${holiday}</b>.</span>`;
+                        warningDiv.classList.remove('hidden');
+                        warningDiv.classList.add('flex');
+                    } else {
+                        warningDiv.classList.add('hidden');
+                        warningDiv.classList.remove('flex');
+                    }
+                });
+            });
+            // =========================================================================
             
         } catch(globalError) {
             console.error("Global Init Error:", globalError);
