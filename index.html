@@ -876,12 +876,14 @@
                 const today = new Date();
                 today.setHours(0,0,0,0);
                 
-                const existingExam = allLogs.find(l => l.subject === subject && l.hasExam && new Date(l.examDate) >= today);
+                // Neuesten Klausur-Eintrag für dieses Fach finden
+                const logsByCreation = [...allLogs].sort((a, b) => new Date(b.createdAt || b.date) - new Date(a.createdAt || a.date));
+                const existingExam = logsByCreation.find(l => l.subject === subject && l.hasExam && l.examDate && new Date(l.examDate + 'T23:59:59') >= today);
                 
                 if (existingExam) {
                     document.getElementById('q4-standard').classList.add('hidden');
                     document.getElementById('q4-existing').classList.remove('hidden');
-                    document.getElementById('q4-existing-text').innerHTML = `<b>Thema:</b> ${existingExam.examText}<br><b>Wann:</b> ${new Date(existingExam.examDate).toLocaleDateString('de-DE')}`;
+                    document.getElementById('q4-existing-text').innerHTML = `<b>Thema:</b> ${existingExam.examText}<br><b>Wann:</b> ${new Date(existingExam.examDate + 'T12:00:00').toLocaleDateString('de-DE')}`;
                     
                     document.querySelector('input[name="exam_update"][value="keep"]').checked = true;
                     document.getElementById('w-exam-text').value = existingExam.examText;
@@ -909,17 +911,21 @@
                 let hasExam = false;
                 let examText = "";
                 let examDate = "";
+                let cleanupOldExams = false;
                 
                 if (window.currentExistingExam) {
                     const action = document.querySelector('input[name="exam_update"]:checked').value;
                     if (action === 'keep') {
-                        hasExam = true;
-                        examText = window.currentExistingExam.examText;
-                        examDate = window.currentExistingExam.examDate;
+                        // Klausur nicht erneut im neuen Tages-Eintrag doppelt anlegen,
+                        // da sie bereits im ursprünglichen Eintrag gespeichert ist!
+                        hasExam = false;
+                        examText = "";
+                        examDate = "";
                     } else {
                         examText = document.getElementById('w-exam-text').value.trim();
                         examDate = document.getElementById('w-exam-date').value;
                         hasExam = examText !== "" && examDate !== "";
+                        cleanupOldExams = true; // Alte Klausur-Kopien dieses Fachs ersetzen
                     }
                 } else {
                     hasExam = document.querySelector('input[name="has_exam"]:checked').value === 'yes';
@@ -950,6 +956,21 @@
                 try {
                     const collectionName = 'school_logs_' + currentProfile.toLowerCase();
                     const logsRef = collection(db, collectionName);
+
+                    // Falls eine bestehende Klausur angepasst wurde, alte Klausur-Einträge dieses Fachs deaktivieren
+                    if (cleanupOldExams) {
+                        const today = new Date();
+                        today.setHours(0,0,0,0);
+                        const oldExams = allLogs.filter(l => l.subject === subject && l.hasExam && l.examDate && new Date(l.examDate + 'T23:59:59') >= today);
+                        for (const oldLog of oldExams) {
+                            await updateDoc(doc(db, collectionName, oldLog.id), {
+                                hasExam: false,
+                                examText: "",
+                                examDate: ""
+                            });
+                        }
+                    }
+
                     await addDoc(logsRef, payload);
                     
                     showToast(`${subject} gespeichert!`);
@@ -1063,7 +1084,7 @@
                     snapshot.forEach((doc) => {
                         allLogs.push({ id: doc.id, ...doc.data() });
                     });
-                    allLogs.sort((a, b) => new Date(b.date) - new Date(a.date));
+                    allLogs.sort((a, b) => new Date(b.date) - new Date(a.date) || new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
                     updateSubjectFilterList();
                     renderLogs();
                     renderUpcomingEvents(); 
@@ -1249,12 +1270,21 @@
                 const today = new Date();
                 today.setHours(0,0,0,0);
 
-                allLogs.forEach(log => {
+                // Nach Erstellungsdatum sortieren (neueste zuerst), damit bei Klausuren immer nur der aktuellste Stand pro Fach genommen wird
+                const logsByCreation = [...allLogs].sort((a, b) => new Date(b.createdAt || b.date) - new Date(a.createdAt || a.date));
+                const seenExamSubjects = new Set();
+
+                logsByCreation.forEach(log => {
                     if (log.hasHomework && log.homeworkDate) {
                         events.push({ id: log.id, type: 'homework', date: new Date(log.homeworkDate + 'T12:00:00'), subject: log.subject, text: log.homeworkText, done: log.homeworkDone || false });
                     }
                     if (log.hasExam && log.examDate) {
-                        events.push({ id: log.id, type: 'exam', date: new Date(log.examDate + 'T12:00:00'), subject: log.subject, text: log.examText });
+                        const examDateObj = new Date(log.examDate + 'T12:00:00');
+                        // Verhindert doppelte Klausuren desselben Fachs in der Terminliste
+                        if (examDateObj >= today && !seenExamSubjects.has(log.subject)) {
+                            seenExamSubjects.add(log.subject);
+                            events.push({ id: log.id, type: 'exam', date: examDateObj, subject: log.subject, text: log.examText });
+                        }
                     }
                     if (log.subject === 'Allgemeine Info' && log.hasDueDate && log.dueDate) {
                         events.push({ id: log.id, type: 'general', date: new Date(log.dueDate + 'T12:00:00'), subject: 'Info/Notiz', text: log.notes });
@@ -1353,7 +1383,6 @@
                 }
 
                 let filteredLogs = allLogs;
-                const today = new Date();
                 
                 if (currentFilterMode === 'week' && selectedWeekStart && selectedWeekEnd) {
                     filteredLogs = allLogs.filter(l => {
@@ -1363,7 +1392,16 @@
                 } else if (currentFilterMode === 'hw') {
                     filteredLogs = allLogs.filter(l => l.hasHomework === true);
                 } else if (currentFilterMode === 'exam') {
-                    filteredLogs = allLogs.filter(l => l.hasExam === true);
+                    // Auch im Klausuren-Filter doppelte Einträge desselben Fachs & Datums herausfiltern
+                    const seenExams = new Set();
+                    const logsByCreation = [...allLogs].sort((a, b) => new Date(b.createdAt || b.date) - new Date(a.createdAt || a.date));
+                    filteredLogs = logsByCreation.filter(l => {
+                        if (!l.hasExam) return false;
+                        const key = `${l.subject}_${l.examDate}`;
+                        if (seenExams.has(key)) return false;
+                        seenExams.add(key);
+                        return true;
+                    });
                 } else if (currentFilterMode === 'subjects' && selectedFilterSubjects.length > 0) {
                     filteredLogs = allLogs.filter(l => selectedFilterSubjects.includes(l.subject));
                 } else if (currentFilterMode === 'general') {
@@ -1651,7 +1689,7 @@
             };
 
             // =========================================================================
-            // 🔥 NEU: DER INTELLIGENTE FERIEN-WARNER
+            // 🔥 DER INTELLIGENTE FERIEN-WARNER
             // =========================================================================
             function checkHoliday(dateString) {
                 if(!dateString) return null;
@@ -1666,16 +1704,12 @@
                 return null;
             }
 
-            // Finde alle Datums-Eingabefelder in der App und füge den Warner an
             document.querySelectorAll('input[type="date"]').forEach(input => {
-                // Erstelle das grüne Hinweis-Kästchen (erstmal unsichtbar)
                 const warningDiv = document.createElement('div');
                 warningDiv.className = 'hidden mt-2 p-3 bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-sm font-semibold rounded-xl border border-green-200 dark:border-green-800/50 items-center gap-2 shadow-sm transition-all';
                 
-                // Füge das Kästchen direkt nach dem jeweiligen Eingabefeld ein
                 input.parentNode.insertBefore(warningDiv, input.nextSibling);
 
-                // Wenn sich das Datum ändert, prüfe ob es in den Ferien liegt
                 input.addEventListener('change', (e) => {
                     const holiday = checkHoliday(e.target.value);
                     if(holiday) {
